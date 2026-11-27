@@ -1,5 +1,5 @@
 # Keeps the dependencies up to date. Pull requests go to the default branch
-# (main now, develop after go-live), so no target-branch is set.
+# develop, so no target-branch is set.
 #
 # The titles must match pr-conventions.yml: "build(deps): ..." for Go and
 # npm, "ci(deps): ..." for GitHub Actions.
@@ -20,6 +20,10 @@ updates:
     groups:
       go:
         update-types: [minor, patch]
+    ignore:
+      # v1 needs code changes (#14).
+      - dependency-name: github.com/gobwas/glob
+        update-types: [version-update:semver-major]
 
   # staticcheck and govulncheck, in a module of their own.
   - package-ecosystem: gomod
@@ -72,6 +76,13 @@ updates:
     groups:
       npm:
         update-types: [minor, patch]
+    ignore:
+      # Matches engines.vscode, so that older VS Code versions stay
+      # supported; it rises only together with engines.vscode (#22).
+      - dependency-name: "@types/vscode"
+      # Node 24 for now (#22).
+      - dependency-name: "@types/node"
+        update-types: [version-update:semver-major]
 
   # The base image of the container image (docker/Dockerfile).
   - package-ecosystem: docker
