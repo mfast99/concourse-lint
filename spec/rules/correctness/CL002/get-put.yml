@@ -1,0 +1,21 @@
+# CL002: get/put refers to a resource that is not defined.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+- name: image
+  type: registry-image
+  source: {repository: example/app}
+
+jobs:
+- name: build
+  plan:
+  - get: rep                  # want CL002
+    trigger: true
+  - get: repo
+  - task: build
+    file: repo/ci/build.yml
+  - put: imgae                # want CL002
+    params: {image: image/image.tar}
+  - put: image
+    params: {image: image/image.tar}

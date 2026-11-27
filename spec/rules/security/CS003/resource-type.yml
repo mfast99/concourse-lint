@@ -1,0 +1,18 @@
+# CS003 in the source of a resource_type.
+resource_types:
+- name: custom
+  type: registry-image
+  source:
+    repository: registry.internal/custom-resource
+    tag: "1.0.0"
+    insecure: true            # want CS003
+
+resources:
+- name: thing
+  type: custom
+  source: {}
+
+jobs:
+- name: test
+  plan:
+  - get: thing

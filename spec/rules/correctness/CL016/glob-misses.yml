@@ -1,0 +1,17 @@
+# CL016: a glob covers some jobs, but not all.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+groups:
+- name: builds
+  jobs: ["build-*"]
+
+jobs:
+- name: build-linux
+  plan: [{get: repo}]
+- name: build-windows
+  plan: [{get: repo}]
+- name: release               # want CL016
+  plan: [{get: repo}]

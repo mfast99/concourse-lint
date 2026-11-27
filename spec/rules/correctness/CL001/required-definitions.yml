@@ -1,0 +1,26 @@
+# CL001: required fields of resource types, var sources and groups.
+resource_types:
+- name: slack                 # want CL001
+  source: {repository: cfcommunity/slack-notification-resource, tag: "1.7.0"}
+
+var_sources:
+- name: vault                 # want CL001
+  config: {url: https://vault.example.com}
+
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+- name: notify
+  type: slack
+  source: {url: ((slack-webhook))}
+
+groups:
+- jobs: [test]                # want CL001
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - put: notify
+    params: {text: done}

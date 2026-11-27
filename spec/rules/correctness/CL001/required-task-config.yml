@@ -1,0 +1,21 @@
+# CL001: required fields of an inline task config: platform, and a name for
+# every input and output.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - task: unit
+    config:                   # want CL001
+      image_resource:
+        type: registry-image
+        source: {repository: golang, tag: "1.22"}
+      inputs:
+      - path: repo            # want CL001
+      outputs:
+      - path: build           # want CL001
+      run: {path: make}

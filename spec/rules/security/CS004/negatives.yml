@@ -1,0 +1,31 @@
+# CS004 must NOT fire here: https, ssh, loopback hosts, a URL in the middle
+# of a text, and URLs outside of source (task params are the task's business).
+resources:
+- {name: secure, type: git, source: {uri: "https://git.internal/app.git"}}
+- {name: ssh, type: git, source: {uri: "git@git.internal:app.git"}}
+- {name: ssh-url, type: git, source: {uri: "ssh://git@git.internal/app.git"}}
+- {name: local, type: git, source: {uri: "http://localhost:3000/app.git"}}
+- {name: loop, type: git, source: {uri: "http://127.0.0.1/app.git"}}
+- {name: loop6, type: git, source: {uri: "http://[::1]:8080/app.git"}}
+- name: notes
+  type: mock
+  source:
+    description: "Old mirror: http://old.internal"
+    http_proxy_enabled: true
+    scheme: http
+
+jobs:
+- name: test
+  plan:
+  - in_parallel:
+    - get: secure
+    - get: ssh
+    - get: ssh-url
+    - get: local
+    - get: loop
+    - get: loop6
+    - get: notes
+  - task: docs
+    file: secure/ci/docs.yml
+    params:
+      DOCS_URL: http://docs.internal

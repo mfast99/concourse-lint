@@ -1,0 +1,29 @@
+# ((var)) without a dot comes from the credential manager or from -v/-l and is
+# not an error. ((.:var)) is valid after load_var, also nested and in
+# a task path. Must produce no findings.
+resources:
+- name: repo
+  type: git
+  source:
+    uri: ((repo.uri))
+    branch: ((branch))
+    private_key: ((repo.private_key))
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+    trigger: true
+  - load_var: build-number
+    file: repo/.build-number
+  - in_parallel:
+    - task: build-linux
+      file: repo/ci/build.yml
+      vars:
+        os: linux
+        number: ((.:build-number))
+    - task: build-darwin
+      file: repo/ci/((build-task)).yml
+      vars:
+        os: darwin
+        number: ((.:build-number))

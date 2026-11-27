@@ -1,0 +1,14 @@
+# CS001 in the vars of set_pipeline.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: configure
+  plan:
+  - get: repo
+  - set_pipeline: child
+    file: repo/ci/child.yml
+    vars:
+      admin_password: admin   # want CS001

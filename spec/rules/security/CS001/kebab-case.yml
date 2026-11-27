@@ -1,0 +1,13 @@
+# CS001: words are also split at "-" (admin-password, access-key).
+resources:
+- name: api
+  type: mock
+  source:
+    admin-password: admin     # want CS001
+    access-key: abc123        # want CS001
+    client-secret: s3cr3t     # want CS001
+
+jobs:
+- name: test
+  plan:
+  - get: api

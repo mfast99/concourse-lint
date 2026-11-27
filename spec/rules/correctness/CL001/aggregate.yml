@@ -1,0 +1,21 @@
+# CL001: aggregate was removed in Concourse 7 (use in_parallel). The content
+# of a step without a step type is unknown, so it gives no follow-up
+# findings: "repo" may be used and fetched in there (no CL006, no CL011).
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - aggregate:                # want CL001
+    - get: repo
+  - task: unit
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: golang, tag: "1.24"}
+      inputs: [{name: repo}]
+      run: {path: repo/ci/unit.sh}

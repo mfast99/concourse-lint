@@ -1,0 +1,16 @@
+# CL007: a put with no_get: true has no implicit get, so there is no artifact.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: release
+  plan:
+  - get: source
+    resource: repo
+  - put: repo
+    no_get: true
+    params: {repository: source}
+  - task: inspect
+    file: repo/ci/inspect.yml  # want CL007

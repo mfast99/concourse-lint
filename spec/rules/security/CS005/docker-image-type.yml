@@ -1,0 +1,15 @@
+# CS005 applies to the older docker-image type as well.
+resource_types:
+- name: legacy
+  type: docker-image
+  source: {repository: example/legacy-resource}   # want CS005
+
+resources:
+- name: thing
+  type: legacy
+  source: {}
+
+jobs:
+- name: test
+  plan:
+  - get: thing

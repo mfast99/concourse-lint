@@ -1,0 +1,55 @@
+{
+  "findings": [
+    {
+      "file": "ci/pipeline.yml",
+      "rule": "CS008",
+      "severity": "warning",
+      "pos": {
+        "line": 9,
+        "col": 3,
+        "end_line": 9,
+        "end_col": 3
+      },
+      "message": "job 'build' has public build logs",
+      "hint": "",
+      "suggestion": "",
+      "docs": "https://github.com/mfast99/concourse-lint/blob/main/docs/rules/CS008.md"
+    },
+    {
+      "file": "ci/pipeline.yml",
+      "rule": "CL002",
+      "severity": "error",
+      "pos": {
+        "line": 13,
+        "col": 10,
+        "end_line": 13,
+        "end_col": 13
+      },
+      "message": "resource 'rep' is not defined",
+      "hint": "did you mean 'repo'?",
+      "suggestion": "repo",
+      "docs": "https://github.com/mfast99/concourse-lint/blob/main/docs/rules/CL002.md"
+    },
+    {
+      "file": "<stdin>",
+      "rule": "CS009",
+      "severity": "info",
+      "pos": {
+        "line": 13,
+        "col": 5,
+        "end_line": 13,
+        "end_col": 5
+      },
+      "message": "load_var 'version' reveals the value in the log",
+      "hint": "",
+      "suggestion": "",
+      "docs": "https://github.com/mfast99/concourse-lint/blob/main/docs/rules/CS009.md"
+    }
+  ],
+  "errors": [
+    {
+      "file": "missing.yml",
+      "message": "open missing.yml: no such file or directory"
+    }
+  ]
+}

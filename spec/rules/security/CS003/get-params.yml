@@ -1,0 +1,14 @@
+# CS003: TLS verification disabled in the get_params of a put, as YAML 1.1 "yes".
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: release
+  plan:
+  - get: repo
+  - put: repo
+    params: {repository: repo}
+    get_params:
+      skip_ssl_verification: yes   # want CS003

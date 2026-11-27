@@ -1,0 +1,30 @@
+# Go to definition and find references for resources: a get or put by its
+# step name or by resource:, and the resources of a group. An artifact name
+# (get: source, file: source/...) is no reference to a resource.
+resources:
+- name: repo
+#        ^ references 13:10 17:15 22:10 29:15
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+#         ^ definition 5:9
+  - get: source
+#        ^ definition none
+    resource: repo
+#             ^ definition 5:9
+  - task: test
+    file: source/ci/test.yml
+#          ^ definition none
+  - put: repo
+#           ^ definition 5:9
+    params: {repository: source}
+
+groups:
+- name: all
+  jobs: [build]
+  resources: [repo]
+#              ^ definition 5:9

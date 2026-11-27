@@ -1,0 +1,14 @@
+# CL007: artifacts do not carry over from one job to another.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: fetch
+  plan:
+  - get: repo
+- name: test
+  plan:
+  - task: unit
+    file: repo/ci/unit.yml    # want CL007

@@ -1,0 +1,7 @@
+# want-anywhere CL000
+# "source:" is indented one space too far.
+resources:
+- name: repo
+  type: git
+   source:
+    uri: https://github.com/example/app.git

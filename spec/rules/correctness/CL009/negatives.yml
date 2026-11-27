@@ -1,0 +1,23 @@
+# CL009 must NOT fire here: the passed: job uses the resource only
+# via put or only via an alias.
+resources:
+- {name: repo, type: git, source: {uri: "https://github.com/example/app.git"}}
+- {name: image, type: registry-image, source: {repository: example/app}}
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+  - put: image
+    params: {image: repo/image.tar}
+- name: test
+  plan:
+  - get: src
+    resource: repo
+    passed: [build]
+- name: deploy
+  plan:
+  - get: image
+    passed: [build]
+  - get: repo
+    passed: [test]

@@ -1,0 +1,15 @@
+# CL022: a spruce template. The top-level meta: gives no CL018 because the
+# other rules do not run.
+meta:
+  repo: https://github.com/example/app.git
+
+resources:
+- name: repo
+  type: git
+  source:
+    uri: (( grab meta.repo ))  # want CL022
+
+jobs:
+- name: test
+  plan:
+  - get: repo

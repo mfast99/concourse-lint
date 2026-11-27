@@ -1,0 +1,12 @@
+# CL001: required fields missing, reported at the first line of the element.
+# No follow-up findings for nameless elements; no plan is CB003, not CL001.
+resources:
+- type: git                   # want CL001
+  source: {uri: https://github.com/example/other.git}
+- name: repo                  # want CL001
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- plan:                       # want CL001
+  - get: repo
+- name: empty                 # want CB003

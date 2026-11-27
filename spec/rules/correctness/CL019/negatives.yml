@@ -1,0 +1,37 @@
+# CL019 negatives: valid durations and formats, values from ((vars)), and a
+# load_var without format (the format then comes from the file extension).
+resources:
+- name: repo
+  type: git
+  check_timeout: 2m
+  source: {uri: https://github.com/example/app.git}
+- name: other
+  type: git
+  check_timeout: ((check-timeout))
+  source: {uri: https://github.com/example/other.git}
+
+jobs:
+- name: test
+  plan:
+  - in_parallel:
+    - get: repo
+      timeout: 1h30m
+    - get: other
+      timeout: ((get-timeout))
+  - load_var: json-settings
+    file: repo/settings
+    format: json
+  - load_var: yaml-settings
+    file: repo/settings
+    format: yaml
+  - load_var: yml-settings
+    file: repo/settings
+    format: yml
+  - load_var: raw-settings
+    file: repo/settings
+    format: raw
+  - load_var: trimmed-settings
+    file: repo/settings
+    format: trim
+  - load_var: version
+    file: repo/version.txt

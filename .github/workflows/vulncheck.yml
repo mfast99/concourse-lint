@@ -1,0 +1,36 @@
+# Known vulnerabilities in the dependencies and in the Go standard library
+# the binaries are built with. Also runs every day: a new vulnerability can
+# turn up without any change in the code.
+name: vulncheck
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+  schedule:
+    - cron: "17 5 * * *"
+
+# A new push to a pull request cancels the run of the commit before. Every
+# other run has a group of its own and is never cancelled: one group for all
+# pushes to main would cancel the waiting runs when more than one waits.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  govulncheck:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # The same Go as the builds in ci.yml and release.yml, since
+      # govulncheck checks the standard library of this version.
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          go-version: "1.27.x"
+          check-latest: true
+      - run: make vuln

@@ -1,0 +1,18 @@
+# CS005: task image without a tag, in flow style.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - task: unit
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: golang}   # want CS005
+      inputs: [{name: repo}]
+      run: {path: repo/ci/unit.sh}

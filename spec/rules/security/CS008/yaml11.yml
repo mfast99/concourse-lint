@@ -1,0 +1,16 @@
+# CS008: YAML 1.1 booleans (yes, on) count as true; "true" is only CL001.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: a
+  public: yes                 # want CS008
+  plan: [{get: repo}]
+- name: b
+  public: on                  # want CS008
+  plan: [{get: repo}]
+- name: c
+  public: "true"              # want CL001
+  plan: [{get: repo}]

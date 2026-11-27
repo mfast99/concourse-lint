@@ -1,0 +1,23 @@
+# CS001 in task params, for tasks from file: and inline tasks.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: deploy
+  plan:
+  - get: repo
+  - task: from-file
+    file: repo/ci/deploy.yml
+    params:
+      DB_PASSWORD: changeme   # want CS001
+  - task: inline
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: alpine, tag: "3.20"}
+      params:
+        API_TOKEN: tok-123    # want CS001
+      run: {path: echo}

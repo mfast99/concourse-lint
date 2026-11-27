@@ -1,0 +1,38 @@
+# CS002 must NOT fire here: prefixes without a valid length, public
+# keys, certificates, Stripe test keys, documentation links, private key
+# frames around a placeholder or a ((var)).
+resources:
+- name: repo
+  type: git
+  source:
+    uri: https://github.com/example/app.git
+    private_key: ((git.private_key))
+- name: docs
+  type: mock
+  source:
+    note: "Tokens start with ghp_ and have 36 characters"
+    prefix: AKIA
+    too_short: ghp_abc
+    almost_aws: AKIAIOSFODNN7EXAMPL
+    slack_doc: https://api.slack.com/messaging/webhooks
+    key_header: "-----BEGIN PUBLIC KEY-----"
+    cert: |
+      -----BEGIN CERTIFICATE-----
+      MIIfakecertificatecontent
+      -----END CERTIFICATE-----
+    sk: sk_test_abcdefghijklmnopqrstuvwx
+    key_placeholder: |
+      -----BEGIN OPENSSH PRIVATE KEY-----
+      ###
+      -----END OPENSSH PRIVATE KEY-----
+    key_from_var: |
+      -----BEGIN RSA PRIVATE KEY-----
+      ((concourse_deploy.github_private_key))
+      -----END RSA PRIVATE KEY-----
+    branch: feature/ghp_migration
+
+jobs:
+- name: x
+  plan:
+  - get: repo
+  - get: docs

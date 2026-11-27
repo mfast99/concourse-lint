@@ -1,0 +1,17 @@
+# CS001 in the config of a var source: a fixed Vault token in plain text.
+var_sources:
+- name: vault
+  type: vault
+  config:
+    url: https://vault.example.com
+    client_token: s.abc123def456   # want CS001
+
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo

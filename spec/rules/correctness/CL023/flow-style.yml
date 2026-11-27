@@ -1,0 +1,5 @@
+# CL023: a fragment in flow style.
+groups:
+- name: all
+  jobs: [update-pipeline]
+jobs: [{name: update-pipeline, plan: [{get: pipeline-repo, trigger: true}]}]  # want CL023

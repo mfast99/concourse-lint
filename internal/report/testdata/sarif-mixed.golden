@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "concourse-lint",
+          "version": "v1.2.3",
+          "informationUri": "https://github.com/mfast99/concourse-lint",
+          "rules": [
+            {
+              "id": "CL002",
+              "helpUri": "https://github.com/mfast99/concourse-lint/blob/main/docs/rules/CL002.md"
+            },
+            {
+              "id": "CS008",
+              "helpUri": "https://github.com/mfast99/concourse-lint/blob/main/docs/rules/CS008.md"
+            },
+            {
+              "id": "CS009",
+              "helpUri": "https://github.com/mfast99/concourse-lint/blob/main/docs/rules/CS009.md"
+            }
+          ]
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": false,
+          "toolExecutionNotifications": [
+            {
+              "level": "error",
+              "message": {
+                "text": "open missing.yml: no such file or directory"
+              },
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "missing.yml"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "columnKind": "unicodeCodePoints",
+      "results": [
+        {
+          "ruleId": "CS008",
+          "ruleIndex": 1,
+          "level": "warning",
+          "message": {
+            "text": "job 'build' has public build logs"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "ci/pipeline.yml"
+                },
+                "region": {
+                  "startLine": 9,
+                  "startColumn": 3
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CL002",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "text": "resource 'rep' is not defined (did you mean 'repo'?)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "ci/pipeline.yml"
+                },
+                "region": {
+                  "startLine": 13,
+                  "startColumn": 10,
+                  "endLine": 13,
+                  "endColumn": 13
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "Change to \"repo\""
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "ci/pipeline.yml"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "startLine": 13,
+                        "startColumn": 10,
+                        "endLine": 13,
+                        "endColumn": 13
+                      },
+                      "insertedContent": {
+                        "text": "repo"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "CS009",
+          "ruleIndex": 2,
+          "level": "note",
+          "message": {
+            "text": "load_var 'version' reveals the value in the log"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "stdin"
+                },
+                "region": {
+                  "startLine": 13,
+                  "startColumn": 5
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

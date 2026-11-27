@@ -1,0 +1,39 @@
+# Rule catalog: ID, severity, title. The tests check that every rule here
+# has a test case under spec/ and that every finding carries this severity.
+CL000 error   YAML syntax error
+CL001 error   Structural error
+CL002 error   get/put or a group refers to a missing resource
+CL003 error   passed: names a missing job
+CL004 error   Resource type is not defined
+CL005 error   Duplicate name
+CL006 error   Resource is never used
+CL007 error   file: without an available artifact
+CL008 error   ((.:var)) without load_var
+CL009 error   Job in passed: does not use the resource
+CL010 error   Group names a missing job
+CL011 error   Task input without an available artifact
+CL012 error   input_mapping/output_mapping points to nothing
+CL013 error   Cycle via passed:
+CL014 warning Task output shadows an artifact
+CL015 warning Invalid suppression comment
+CL016 error   Job in no group
+CL017 warning Unquoted value changes when Concourse reads it
+CL018 warning Unknown field that Concourse ignores
+CL019 error   Value fails when the step runs
+CL020 warning Unknown keyword that Concourse ignores
+CL021 info    String contains a literal tab
+CL022 info    Template instead of a pipeline
+CL023 info    Pipeline fragment instead of a pipeline
+CL024 warning Content after the first YAML document
+CS001 warning Plaintext secret
+CS002 error   Known token format found
+CS003 warning TLS verification disabled
+CS004 warning Unencrypted URL
+CS005 warning Image without a fixed tag or digest
+CS006 warning Privileged task
+CS007 warning Privileged resource type
+CS008 warning Public build logs
+CS009 info    load_var reveals the value in the log
+CB001 info    Resource type is not used
+CB002 warning check_every below one minute
+CB003 warning Job without steps

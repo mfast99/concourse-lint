@@ -1,0 +1,14 @@
+# CS002: AWS access key ID. Found by its format alone, even under a key that
+# is not secret-like (access_key_id), where CS001 would not fire.
+resources:
+- name: bucket
+  type: s3
+  source:
+    bucket: artifacts
+    regexp: app-(.*).tgz
+    access_key_id: AKIAIOSFODNN7EXAMPLE   # want CS002
+
+jobs:
+- name: test
+  plan:
+  - get: bucket

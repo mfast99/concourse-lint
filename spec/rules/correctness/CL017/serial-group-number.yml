@@ -1,0 +1,17 @@
+# CL017: a serial group that looks like a number. Concourse turns 1.10 into
+# "1.1", so the two jobs end up in different serial groups and can run at
+# the same time.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: deploy-a
+  serial_groups: [1.10]       # want CL017
+  plan:
+  - get: repo
+- name: deploy-b
+  serial_groups: ["1.10"]
+  plan:
+  - get: repo

@@ -1,0 +1,33 @@
+# Suppression via comment: on the same line or on the line directly
+# before it (no blank line in between). Several rules separated by commas. A
+# justification after " -- " is allowed.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+  - task: same-line
+    privileged: true  # concourse-lint:ignore CS006 -- oci-build-task needs this
+    file: repo/ci/build.yml
+  - task: line-above
+    # concourse-lint:ignore CS006
+    privileged: true
+    file: repo/ci/build.yml
+  - task: wrong-rule
+    privileged: true  # concourse-lint:ignore CS001   # want CS006
+    file: repo/ci/build.yml
+  - task: scope-is-one-line
+    privileged: true          # want CS006
+    file: repo/ci/build.yml
+    params:
+      # concourse-lint:ignore CS001,CS006
+      DB_PASSWORD: changeme
+  - task: too-far
+    # concourse-lint:ignore CS006
+
+    privileged: true          # want CS006
+    file: repo/ci/build.yml

@@ -1,0 +1,32 @@
+# Hover on a resource type: its own type or "built-in", and what uses it.
+# An unknown type (CL004) has no hover.
+resource_types:
+- name: slack
+#        ^ hover "resource type slack | type: registry-image | used by: notify"
+  type: registry-image
+  source: {repository: example/slack-resource, tag: "2.0"}
+
+resources:
+- name: notify
+  type: slack
+#        ^ hover "resource type slack | type: registry-image | used by: notify"
+  source: {url: ((slack-webhook))}
+- name: repo
+  type: git
+#        ^ hover "resource type git | built-in | used by: repo"
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+  - task: build
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+#               ^ hover "resource type registry-image | built-in | used by: slack, build (image_resource)"
+        source: {repository: example/build, tag: "1.0"}
+      run: {path: make}
+  - put: notify
+    params: {text: done}

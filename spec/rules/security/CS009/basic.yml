@@ -1,0 +1,13 @@
+# CS009: load_var with reveal: true.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: x
+  plan:
+  - get: repo
+  - load_var: version
+    file: repo/version
+    reveal: true              # want CS009

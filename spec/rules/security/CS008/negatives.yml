@@ -1,0 +1,22 @@
+# CS008 must NOT fire here: public: false or no, no public field at all, a
+# resource with public: true (shows only metadata, a different field), and a
+# task param named "public".
+resources:
+- name: repo
+  type: git
+  public: true
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: a
+  public: false
+  plan: [{get: repo}]
+- name: b
+  public: no
+  plan: [{get: repo}]
+- name: c
+  plan:
+  - get: repo
+  - task: publish
+    file: repo/ci/publish.yml
+    params: {public: true}

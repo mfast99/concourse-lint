@@ -1,0 +1,8 @@
+# CL005 in flow style.
+resources:
+- {name: repo, type: git, source: {uri: "https://github.com/example/a.git"}}
+- {name: repo, type: git, source: {uri: "https://github.com/example/b.git"}}   # want CL005
+
+jobs:
+- {name: build, plan: [{get: repo}]}
+- {name: build, plan: [{get: repo}]}   # want CL005

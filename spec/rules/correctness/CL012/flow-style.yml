@@ -1,0 +1,11 @@
+# CL012 in flow style.
+resources:
+- {name: repo, type: git, source: {uri: "https://github.com/example/app.git"}}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - task: unit
+    file: repo/ci/unit.yml
+    input_mapping: {source: rpo}   # want CL012

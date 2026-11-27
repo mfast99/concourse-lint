@@ -1,0 +1,12 @@
+#@ load("@ytt:data", "data")  # want CL022
+# CL022: a template is recognized even when its YAML is broken; CL022
+# replaces the CL000 then, as every other finding.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git
+
+jobs:
+- name: test
+  plan:
+  - get: repo

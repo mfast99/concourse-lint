@@ -1,0 +1,20 @@
+# CL011: with resource: set, the artifact is named after get:. An input named
+# after the resource does not exist.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: build
+  plan:
+  - get: source
+    resource: repo
+  - task: compile
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: golang, tag: "1.24"}
+      inputs: [{name: repo}]    # want CL011
+      run: {path: source/ci/compile.sh}

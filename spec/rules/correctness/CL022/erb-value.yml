@@ -1,0 +1,10 @@
+# CL022: ERB inside a value is a template too.
+resources:
+- name: repo-<%= image_name %>  # want CL022
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo-<%= image_name %>

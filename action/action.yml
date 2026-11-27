@@ -1,0 +1,43 @@
+# The GitHub Action of concourse-lint. Its source is action/ in
+# mfast99/concourse-lint; every release writes it to the repository
+# mfast99/concourse-lint-action with "version" set to that release and tags
+# it with the same version (release.yml, job action).
+name: concourse-lint
+description: Check Concourse CI pipelines for errors, security issues and bad practice.
+author: mfast99
+branding:
+  icon: check-circle
+  color: blue
+
+inputs:
+  args:
+    description: >-
+      The arguments of concourse-lint. The default checks every pipeline in
+      the repository and shows the findings as annotations in pull requests.
+    default: check --format github .
+  version:
+    description: The concourse-lint version to install, e.g. 0.1.0.
+    # Set by the release workflow to the version of the tag.
+    default: 0.0.0
+  token:
+    description: Token for gh attestation verify (read access to the repository).
+    default: ${{ github.token }}
+
+runs:
+  using: composite
+  steps:
+    - name: Install concourse-lint
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        VERSION: ${{ inputs.version }}
+      run: '"$GITHUB_ACTION_PATH/install.sh" "$VERSION"'
+    # The arguments are split on spaces like in a shell, but never run as
+    # shell code: they come from the workflow of the user.
+    - name: Run concourse-lint
+      shell: bash
+      env:
+        ARGS: ${{ inputs.args }}
+      run: |
+        read -r -a arguments <<<"$ARGS"
+        concourse-lint "${arguments[@]}"

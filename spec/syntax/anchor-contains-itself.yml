@@ -1,0 +1,13 @@
+# want-anywhere CL000
+# An anchor that contains an alias to itself would never end.
+# fly: "anchor 'steps' value contains itself".
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan: &steps
+  - get: repo
+  - do: *steps

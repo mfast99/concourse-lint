@@ -1,0 +1,15 @@
+# CL010: a glob is allowed, but it must match at least one job.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+groups:
+- name: all
+  jobs: ["*"]
+- name: production
+  jobs: ["prod-*"]            # want CL010
+
+jobs:
+- name: deploy-staging
+  plan: [{get: repo}]

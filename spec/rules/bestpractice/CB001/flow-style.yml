@@ -1,0 +1,9 @@
+# CB001 in flow style.
+resource_types:
+- {name: unused, type: registry-image, source: {repository: example/unused, tag: "1.0.0"}}   # want CB001
+
+resources:
+- {name: repo, type: git, source: {uri: "https://github.com/example/app.git"}}
+
+jobs:
+- {name: test, plan: [{get: repo}]}

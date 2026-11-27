@@ -1,0 +1,34 @@
+# Hover on a job: how many steps it has (nested steps and hooks count), the
+# groups it is in (also through a glob) and the jobs in its passed:. On a
+# glob: the jobs it matches.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: build
+#        ^ hover "job build | 1 step | groups: ci, all"
+  plan:
+  - get: repo
+- name: deploy
+#        ^ hover "job deploy | 3 steps | groups: deploy, all | after: build (passed:)"
+  plan:
+  - get: repo
+    passed: [build]
+#             ^ hover "job build | 1 step | groups: ci, all"
+  - task: deploy
+    file: repo/ci/deploy.yml
+    on_failure:
+      task: alert
+      file: repo/ci/alert.yml
+
+groups:
+- name: ci
+  jobs: [build]
+- name: deploy
+  jobs: ["deploy*"]
+#          ^ hover "glob deploy* | matches: deploy"
+- name: all
+  jobs: ["*"]
+#        ^ hover "glob * | matches: build, deploy"

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "concourse-lint",
+          "informationUri": "https://github.com/mfast99/concourse-lint",
+          "rules": []
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "columnKind": "unicodeCodePoints",
+      "results": []
+    }
+  ]
+}

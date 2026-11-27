@@ -1,0 +1,17 @@
+# CL003 with an alias: passed: always names jobs, independent of resource:.
+resources:
+- name: app-repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: unit
+  plan:
+  - get: source
+    resource: app-repo
+    trigger: true
+- name: deploy
+  plan:
+  - get: source
+    resource: app-repo
+    passed: [unit-tests]      # want CL003

@@ -1,0 +1,15 @@
+# CL002 with an alias: with "resource:" only that value counts, the name after
+# get/put is then just the artifact name.
+resources:
+- name: app-repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: source
+    resource: app-rep         # want CL002
+  - get: app-repo
+  - put: deploy-target
+    resource: app-repo

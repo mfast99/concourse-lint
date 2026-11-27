@@ -1,0 +1,27 @@
+# CL011: the input is the output of a LATER task, so it does not exist yet.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+  - task: package
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: alpine, tag: "3.20"}
+      inputs: [{name: repo}, {name: binary}]   # want CL011
+      run: {path: repo/ci/package.sh}
+  - task: compile
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: golang, tag: "1.24"}
+      inputs: [{name: repo}]
+      outputs: [{name: binary}]
+      run: {path: repo/ci/compile.sh}

@@ -1,0 +1,15 @@
+# CL018: a typo in a top-level key. Concourse ignores "group", so the
+# pipeline has no groups and every job shows up in one list.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+
+group:                        # want CL018
+- name: all
+  jobs: [test]

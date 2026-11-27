@@ -1,0 +1,28 @@
+# CL006 must NOT fire here: resources that are only used in hooks, deeply
+# nested or only via an alias.
+resources:
+- {name: repo, type: git, source: {uri: "https://github.com/example/app.git"}}
+- {name: in-hook, type: mock, source: {}}
+- {name: in-step-hook, type: mock, source: {}}
+- {name: deep, type: mock, source: {}}
+- {name: via-alias, type: mock, source: {}}
+- {name: put-in-ensure, type: mock, source: {}}
+
+jobs:
+- name: x
+  plan:
+  - get: repo
+  - do:
+    - in_parallel:
+      - try:
+          get: deep
+  - get: alias-name
+    resource: via-alias
+  - task: t
+    file: repo/ci/t.yml
+    on_success:
+      put: in-step-hook
+  on_failure:
+    get: in-hook
+  ensure:
+    put: put-in-ensure

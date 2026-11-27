@@ -1,0 +1,17 @@
+# CL005: duplicate group.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+groups:
+- name: ci
+  jobs: [test]
+- name: ci                    # want CL005
+  jobs: [build]
+
+jobs:
+- name: test
+  plan: [{get: repo}]
+- name: build
+  plan: [{get: repo}]

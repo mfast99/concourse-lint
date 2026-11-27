@@ -1,0 +1,14 @@
+# CL007: steps inside in_parallel run at the same time, so a sibling's
+# artifact is not available yet.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - in_parallel:
+    - get: repo
+    - task: unit
+      file: repo/ci/unit.yml  # want CL007

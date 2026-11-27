@@ -1,0 +1,51 @@
+# CL018 negatives: a top-level key that only holds anchors, any key inside
+# free-form blocks (source, params, vars), and valid keys of every object.
+shared:
+  git-source: &git-source
+    uri: https://github.com/example/app.git
+    branch: main
+
+display:
+  background_image: https://example.com/background.png
+
+resource_types:
+- name: slack
+  type: registry-image
+  privileged: false
+  check_every: 24h
+  source: {repository: cfcommunity/slack-notification-resource, tag: "1.7.0"}
+
+resources:
+- name: repo
+  type: git
+  icon: github
+  check_every: 10m
+  source:
+    <<: *git-source
+    any_key_the_resource_knows: true
+- name: notify
+  type: slack
+  source: {url: ((slack-webhook))}
+
+groups:
+- name: all
+  jobs: [test]
+
+jobs:
+- name: test
+  serial: true
+  build_log_retention: {builds: 10}
+  plan:
+  - in_parallel:
+      limit: 1
+      steps:
+      - get: repo
+        trigger: true
+  - task: unit
+    file: repo/ci/unit.yml
+    params: {ANY_PARAM: value}
+    vars: {any_var: value}
+    tags: [linux]
+  on_failure:
+    put: notify
+    params: {text: failed}

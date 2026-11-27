@@ -1,0 +1,37 @@
+# CS005 must NOT fire here: fixed tags, a tag from a ((var)), a digest via
+# version, regular image resources (they track new versions on purpose), and
+# a task image taken from an artifact.
+resource_types:
+- name: pinned
+  type: registry-image
+  source: {repository: example/resource, tag: "1.4.2"}
+
+resources:
+- {name: thing, type: pinned, source: {}}
+- {name: app-image, type: registry-image, source: {repository: example/app}}
+
+jobs:
+- name: build
+  plan:
+  - get: thing
+  - get: app-image
+  - task: tag-var
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: golang, tag: ((go-version))}
+      run: {path: go}
+  - task: digest
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: golang}
+        version: {digest: "sha256:0000000000000000000000000000000000000000000000000000000000000000"}
+      run: {path: go}
+  - task: from-artifact
+    image: app-image
+    config:
+      platform: linux
+      run: {path: echo}

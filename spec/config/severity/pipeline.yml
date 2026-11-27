@@ -1,0 +1,17 @@
+# CS005 is an error and CB003 an info here.
+resource_types:
+- name: slack
+  type: registry-image
+  source:
+    repository: cfcommunity/slack-notification-resource   # want CS005
+
+resources:
+- name: notify
+  type: slack
+  source: {url: ((slack-url))}
+
+jobs:
+- name: test
+  plan:
+  - put: notify
+- name: empty                 # want CB003

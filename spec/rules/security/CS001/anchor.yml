@@ -1,0 +1,15 @@
+# CS001 in an anchor (flow style) that is used twice: one finding, at the
+# definition.
+resources:
+- name: repo
+  type: git
+  source: &creds {uri: "https://github.com/example/app.git", password: letmein}   # want CS001
+- name: repo2
+  type: git
+  source: *creds
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - get: repo2

@@ -1,0 +1,10 @@
+{
+	// The language server. ${binary} is the concourse-lint of the package
+	// version, downloaded once from the GitHub release (checked against
+	// checksums.txt), or the one on the PATH when GitHub cannot be reached.
+	// To use another binary, give its full path: ["/path/to/concourse-lint", "lsp"].
+	"command": ["${binary}", "lsp"],
+	// Every YAML file. The server checks only those that look like a
+	// pipeline (top-level "jobs:" with a "plan:").
+	"selector": "source.yaml",
+}

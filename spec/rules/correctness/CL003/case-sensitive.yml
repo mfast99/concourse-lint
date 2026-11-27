@@ -1,0 +1,15 @@
+# CL003: job names are case-sensitive. "Unit" is not "unit".
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: unit
+  plan:
+  - get: repo
+    trigger: true
+- name: deploy
+  plan:
+  - get: repo
+    passed: [Unit]            # want CL003

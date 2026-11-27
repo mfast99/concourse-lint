@@ -1,0 +1,14 @@
+# CS009 in a job hook.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: x
+  plan:
+  - get: repo
+  on_failure:
+    load_var: error
+    file: repo/error
+    reveal: true              # want CS009

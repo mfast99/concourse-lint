@@ -1,0 +1,35 @@
+# CL001: unknown fields where Concourse rejects them: in steps (typos, fields
+# of another step kind), in an inline task config and in across variables.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+    trigger: true
+    passd: [test]             # want CL001
+  - task: unit
+    file: repo/ci/unit.yml
+    privilegd: true           # want CL001
+  - put: repo
+    trigger: true             # want CL001
+  - load_var: version
+    file: repo/version
+    tags: [linux]             # want CL001
+  - task: build
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: alpine, tag: "3.20"}
+      run: {path: make}
+      paramz: {TARGET: all}   # want CL001
+  - task: matrix
+    file: repo/ci/matrix.yml
+    across:
+    - var: os
+      values: [linux, darwin]
+      max_inflight: 1         # want CL001

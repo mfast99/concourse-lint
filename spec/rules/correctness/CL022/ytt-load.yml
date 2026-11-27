@@ -1,0 +1,15 @@
+#@ load("@ytt:data", "data")  # want CL022
+# CL022: a ytt template. Only the first marker is reported; the other
+# rules do not run, so the job without a name gives no CL001.
+resources:
+- name: repo
+  type: git
+  source:
+    uri: https://github.com/example/app.git
+
+jobs:
+#@ for env in data.values.envs:
+- name: #@ "deploy-" + env
+  plan:
+  - get: repo
+#@ end

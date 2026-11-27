@@ -1,0 +1,14 @@
+# Completion in a step without a step type: the step types and the
+# modifiers.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+  - timeout: 1h               # want CL001
+#   ^ complete-has get put task run set_pipeline load_var in_parallel do try attempts across
+#   ^ complete-not trigger file

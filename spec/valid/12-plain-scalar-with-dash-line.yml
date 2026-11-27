@@ -1,0 +1,19 @@
+# Edge case: a multi-line plain value where one line is indented further
+# and starts with "- ". Valid YAML, the "- " is part of the text. goccy
+# ended the value there (CL000, goccy PR #996). Cross-check with fly.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - task: test
+    file: repo/ci/test.yml
+    params:
+      NOTES:
+        first line
+          - an indented dash line
+        last line

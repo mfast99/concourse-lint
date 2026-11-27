@@ -1,0 +1,26 @@
+# CL014: output_mapping renames an output onto an existing artifact that is
+# not an input of the task. (Inline task: for tasks from file: the inputs are
+# unknown.)
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+- name: ci
+  type: git
+  source: {uri: https://github.com/example/ci.git}
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+  - get: ci
+  - task: generate
+    output_mapping: {out: repo}   # want CL014
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: alpine, tag: "3.20"}
+      inputs: [{name: ci}]
+      outputs: [{name: out}]
+      run: {path: ci/generate.sh}

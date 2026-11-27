@@ -1,0 +1,36 @@
+# CL020 negatives: the known words, a version as a mapping, inputs as a list,
+# and values from ((vars)).
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+    version: latest
+  - get: all-versions
+    resource: repo
+    version: every
+  - get: pinned
+    resource: repo
+    version: {ref: abc123}
+  - get: from-var
+    resource: repo
+    version: ((pinned-version))
+  - put: repo
+    inputs: all
+    params: {repository: repo}
+  - put: detected
+    resource: repo
+    inputs: detect
+    params: {repository: repo}
+  - put: listed
+    resource: repo
+    inputs: [repo]
+    params: {repository: repo}
+  - put: from-var-inputs
+    resource: repo
+    inputs: ((put-inputs))
+    params: {repository: repo}

@@ -1,0 +1,22 @@
+# CL005: two get steps with the same name in one job, also with resource:,
+# inside in_parallel and in hooks. fly rejects them ("repeated name").
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+- name: other
+  type: git
+  source: {uri: https://github.com/example/other.git}
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+  - in_parallel:
+    - get: repo               # want CL005
+  - get: repo                 # want CL005
+    resource: other
+  - task: unit
+    file: repo/ci/unit.yml
+    on_failure:
+      get: repo               # want CL005

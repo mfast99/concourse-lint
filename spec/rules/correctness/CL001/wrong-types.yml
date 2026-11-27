@@ -1,0 +1,23 @@
+# CL001: wrong types. Reported at the line of the wrong value,
+# or for structural errors at the line of the key.
+resources:
+- name: repo
+  type: git
+  source:
+    uri: https://github.com/example/app.git
+
+jobs:
+- name: test
+  serial: "sure"              # want CL001
+  plan:
+  - get: repo
+    trigger: 1                # want CL001
+  - task: unit
+    file: repo/ci/unit.yml
+- name: deploy
+  plan:
+  - get: repo
+    passed: test              # want CL001
+- name: release
+  plan:                       # want CL001
+    get: repo

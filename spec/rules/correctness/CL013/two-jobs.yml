@@ -1,0 +1,15 @@
+# CL013: two jobs waiting for each other.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: a
+  plan:
+  - get: repo
+    passed: [b]               # want CL013
+- name: b
+  plan:
+  - get: repo
+    passed: [a]               # want CL013

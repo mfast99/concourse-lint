@@ -1,0 +1,149 @@
+# Release archives of concourse-lint for GoReleaser (tools/release/).
+#
+#   make release-snapshot   local build into dist/release, nothing published
+#
+# The release workflow (.github/workflows/release.yml) runs it when a new
+# version reaches main and publishes a GitHub release. The npm package and the VS Code
+# extension are built by their own scripts (scripts/package-npm.sh,
+# scripts/package-vscode.sh) from the same commit.
+version: 2
+
+project_name: concourse-lint
+
+# dist/ also holds the npm package and the VS Code extension; --clean only
+# removes this folder.
+dist: dist/release
+
+builds:
+  - id: concourse-lint
+    main: ./cmd/concourse-lint
+    binary: concourse-lint
+    env:
+      - CGO_ENABLED=0
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    flags:
+      - -trimpath
+    # The same version string as the npm and VS Code packages: the tag, with
+    # its leading "v".
+    ldflags:
+      - -s -w -X main.version=v{{ .Version }}
+    # The commit time instead of the build time, so that two builds of the
+    # same commit give the same files.
+    mod_timestamp: "{{ .CommitTimestamp }}"
+
+archives:
+  - id: concourse-lint
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    # Everything at the top level of the archive, next to the binary.
+    wrap_in_directory: false
+    files:
+      - LICENSE
+      - NOTICE
+      - README.md
+      # The license texts of the third-party software in the binary (also
+      # printed by "concourse-lint licenses").
+      - src: cmd/concourse-lint/third_party_licenses.txt
+        dst: THIRD_PARTY_LICENSES.txt
+
+# The container image ghcr.io/mfast99/concourse-lint for linux/amd64 and
+# linux/arm64 (docker/Dockerfile). A release pushes the tags 1.2.3, 1.2, 1
+# and latest; a pre-release only its own version. A snapshot loads one image
+# per platform into the local Docker (snapshot-amd64, snapshot-arm64) and
+# pushes nothing (scripts/smoke-test-docker.sh checks it).
+dockers_v2:
+  - id: concourse-lint
+    ids: [concourse-lint]
+    dockerfile: docker/Dockerfile
+    images: [ghcr.io/mfast99/concourse-lint]
+    # A snapshot version (0.2.0-snapshot+abc1234) is no valid tag: snapshots
+    # are tagged "snapshot".
+    tags:
+      - "{{ if .IsSnapshot }}snapshot{{ else }}{{ .Version }}{{ end }}"
+      - "{{ if not (or .Prerelease .IsSnapshot) }}{{ .Major }}.{{ .Minor }}{{ end }}"
+      - "{{ if not (or .Prerelease .IsSnapshot) }}{{ .Major }}{{ end }}"
+      - "{{ if not (or .Prerelease .IsSnapshot) }}latest{{ end }}"
+    platforms: [linux/amd64, linux/arm64]
+    extra_files:
+      - LICENSE
+      - NOTICE
+      - cmd/concourse-lint/third_party_licenses.txt
+    labels:
+      org.opencontainers.image.title: concourse-lint
+      org.opencontainers.image.description: Linter and language server for Concourse CI pipelines
+      org.opencontainers.image.source: https://github.com/mfast99/concourse-lint
+      org.opencontainers.image.licenses: Apache-2.0
+      org.opencontainers.image.version: "{{ .Version }}"
+      org.opencontainers.image.revision: "{{ .FullCommit }}"
+      org.opencontainers.image.created: "{{ .CommitDate }}"
+
+# The Homebrew formula in the tap mfast99/homebrew-tap, for
+# "brew install mfast99/tap/concourse-lint" on macOS and Linux. A formula
+# (brews) and not a cask (homebrew_casks): GoReleaser deprecates brews, but
+# a cask puts the unsigned binary into the macOS quarantine, and casks are
+# not documented for Linux. The release workflow passes HOMEBREW_TAP_TOKEN
+# (contents: write on the tap only); a snapshot or a pre-release only writes
+# the formula to dist/release/homebrew/ (scripts/test-homebrew-formula.sh
+# installs it from there).
+brews:
+  - name: concourse-lint
+    ids: [concourse-lint]
+    repository:
+      owner: mfast99
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    directory: Formula
+    commit_author:
+      name: github-actions[bot]
+      email: 41898282+github-actions[bot]@users.noreply.github.com
+    commit_msg_template: "feat(concourse-lint): release {{ .Tag }}"
+    homepage: https://github.com/mfast99/concourse-lint
+    description: Linter and language server for Concourse CI pipelines
+    license: Apache-2.0
+    skip_upload: auto
+    install: |
+      bin.install "concourse-lint"
+      doc.install "LICENSE", "NOTICE", "THIRD_PARTY_LICENSES.txt"
+    test: |
+      assert_match "concourse-lint v#{version}", shell_output("#{bin}/concourse-lint version")
+      (testpath/"pipeline.yml").write <<~YAML
+        jobs:
+        - name: test
+          plan:
+          - task: run
+            config:
+              platform: linux
+              image_resource:
+                type: registry-image
+                source: {repository: busybox, tag: "1.37"}
+              run: {path: "true"}
+      YAML
+      system bin/"concourse-lint", "check", testpath/"pipeline.yml"
+
+checksum:
+  name_template: checksums.txt
+  algorithm: sha256
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-snapshot+{{ .ShortCommit }}"
+
+# The release notes are the section of the version in CHANGELOG.md
+# (scripts/release-notes.sh, passed with --release-notes), not a list of
+# commits. The changelog must not be disabled: GoReleaser then skips the
+# step that reads --release-notes, and the release has no notes (release.yml
+# checks them before it publishes).
+
+release:
+  # A tag with a pre-release part (v1.0.0-rc.1) becomes a pre-release.
+  prerelease: auto
+  # The release is created as a draft and published after the archives have
+  # their attestations (release.yml), so that nobody downloads a release
+  # that cannot be verified yet.
+  draft: true
+  # A run of the release workflow that failed after the draft was created
+  # can be run again.
+  replace_existing_draft: true

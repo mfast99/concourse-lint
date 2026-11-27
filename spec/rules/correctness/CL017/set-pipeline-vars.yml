@@ -1,0 +1,16 @@
+# CL017: a version with a trailing zero in vars. The child pipeline gets
+# go_version 1.2 instead of 1.20.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: reconfigure
+  plan:
+  - get: repo
+    trigger: true
+  - set_pipeline: build
+    file: repo/ci/build.yml
+    vars:
+      go_version: 1.20        # want CL017

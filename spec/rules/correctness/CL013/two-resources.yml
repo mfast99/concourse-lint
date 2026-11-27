@@ -1,0 +1,18 @@
+# CL013: a cycle can run through different resources. What matters
+# is the graph of jobs, not the individual resource.
+resources:
+- {name: src, type: git, source: {uri: "https://github.com/example/app.git"}}
+- {name: img, type: registry-image, source: {repository: example/app}}
+
+jobs:
+- name: build
+  plan:
+  - get: src
+  - get: img
+    passed: [test]            # want CL013
+  - put: img
+- name: test
+  plan:
+  - get: img
+  - get: src
+    passed: [build]           # want CL013

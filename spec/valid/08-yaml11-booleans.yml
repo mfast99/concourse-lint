@@ -1,0 +1,15 @@
+# Edge case: Concourse parses YAML in 1.1 style, where yes/no/on/off are
+# booleans. A YAML 1.2 parser (goccy/go-yaml) reads them as strings.
+# Expectation: NO CL001. Cross-check with fly validate-pipeline.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  serial: yes
+  interruptible: on
+  plan:
+  - get: repo
+    trigger: yes

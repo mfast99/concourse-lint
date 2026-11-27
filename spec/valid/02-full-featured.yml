@@ -1,0 +1,123 @@
+# Realistic pipeline using many Concourse features. Must produce no findings.
+resource_types:
+- name: slack-notification
+  type: registry-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+    tag: "1.7.0"
+
+resources:
+- name: repo
+  type: git
+  icon: github
+  source:
+    uri: ((git-uri))
+    branch: main
+    private_key: ((git-private-key))
+
+- name: version
+  type: semver
+  source:
+    driver: git
+    uri: ((git-uri))
+    branch: version
+    file: version
+
+- name: image
+  type: registry-image
+  source:
+    repository: registry.example.com/app
+    username: ((registry.user))
+    password: ((registry.password))
+
+- name: nightly
+  type: time
+  source:
+    interval: 24h
+
+- name: notify
+  type: slack-notification
+  source:
+    url: ((slack-webhook))
+
+groups:
+- name: build
+  jobs: [test, build-image]
+- name: deploy
+  jobs: [deploy]
+
+jobs:
+- name: test
+  plan:
+  - in_parallel:
+    - get: repo
+      trigger: true
+    - get: nightly
+      trigger: true
+  - task: unit
+    file: repo/ci/tasks/unit.yml
+  on_failure:
+    put: notify
+    params:
+      text: "Tests failed"
+
+- name: build-image
+  serial: true
+  plan:
+  - in_parallel:
+      fail_fast: true
+      limit: 2
+      steps:
+      - get: repo
+        passed: [test]
+        trigger: true
+      - get: version
+        params: {bump: patch}
+  - task: build
+    privileged: true  # concourse-lint:ignore CS006 -- oci-build-task needs this
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: concourse/oci-build-task, tag: "0.11.1"}
+      inputs:
+      - name: repo
+      outputs:
+      - name: image
+      params:
+        CONTEXT: repo
+      run:
+        path: build
+  - put: image
+    params:
+      image: image/image.tar
+      version: version/version
+  - put: version
+    params: {file: version/version}
+
+- name: deploy
+  plan:
+  - in_parallel:
+    - get: image
+      passed: [build-image]
+      trigger: true
+      params: {skip_download: true}
+    - get: version
+      passed: [build-image]
+    - get: repo
+      passed: [build-image]
+  - load_var: image-version
+    file: version/version
+  - task: deploy
+    file: repo/ci/tasks/deploy.yml
+    across:
+    - var: env
+      values: [staging, production]
+      max_in_flight: 1
+    params:
+      ENVIRONMENT: ((.:env))
+      VERSION: ((.:image-version))
+  ensure:
+    put: notify
+    params:
+      text: "Deploy finished"

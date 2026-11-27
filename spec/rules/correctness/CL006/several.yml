@@ -1,0 +1,16 @@
+# CL006: every unused resource is reported, at the line of its name.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+- name: nightly               # want CL006
+  type: time
+  source: {interval: 24h}
+- name: old-repo              # want CL006
+  type: git
+  source: {uri: https://github.com/example/old.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo

@@ -1,0 +1,16 @@
+# CS007 must NOT fire here: privileged: false, and a field named privileged
+# inside the type's source or defaults (that is configuration, not the flag).
+resource_types:
+- name: safe
+  type: registry-image
+  privileged: false
+  source: {repository: example/safe-resource, tag: "1.0.0", privileged: true}
+  defaults: {privileged: true}
+
+resources:
+- {name: thing, type: safe, source: {}}
+
+jobs:
+- name: x
+  plan:
+  - get: thing

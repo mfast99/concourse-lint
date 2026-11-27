@@ -1,0 +1,15 @@
+# CL017: a leading zero makes Concourse read the number as octal. The task
+# gets UMASK=18, not 0022.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+  - task: build
+    file: repo/ci/build.yml
+    params:
+      UMASK: 0022             # want CL017

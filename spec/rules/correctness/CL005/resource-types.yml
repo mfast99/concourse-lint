@@ -1,0 +1,18 @@
+# CL005: duplicate resource_type.
+resource_types:
+- name: slack
+  type: registry-image
+  source: {repository: cfcommunity/slack-notification-resource, tag: "1.7.0"}
+- name: slack                 # want CL005
+  type: registry-image
+  source: {repository: example/slack, tag: "1.0.0"}
+
+resources:
+- name: notify
+  type: slack
+  source: {url: ((slack-url))}
+
+jobs:
+- name: test
+  plan:
+  - put: notify

@@ -1,0 +1,17 @@
+# CL010: job names in groups are case-sensitive.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+groups:
+- name: ci
+  jobs: [test, Build]         # want CL010
+- name: all
+  jobs: ["*"]
+
+jobs:
+- name: test
+  plan: [{get: repo}]
+- name: build
+  plan: [{get: repo}]

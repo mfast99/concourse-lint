@@ -1,0 +1,12 @@
+# CB003: a job without a plan does nothing. Concourse accepts it, so it is a
+# warning: usually the plan was forgotten or the job is a leftover.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+- name: deploy                # want CB003

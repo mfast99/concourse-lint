@@ -1,0 +1,19 @@
+# CL009: the passed: job has an artifact NAMED "image", but it comes from a
+# different resource. What counts is the resource, not the artifact name.
+resources:
+- name: image
+  type: registry-image
+  source: {repository: example/app}
+- name: base-image
+  type: registry-image
+  source: {repository: example/base}
+
+jobs:
+- name: build
+  plan:
+  - get: image
+    resource: base-image
+- name: deploy
+  plan:
+  - get: image
+    passed: [build]           # want CL009

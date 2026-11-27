@@ -1,0 +1,10 @@
+# CL023: a job file that spruce or aviator merges with resources.yml
+# (genesis-community/genesis ci/pipeline/jobs/). Without resources: it is a
+# fragment; one finding instead of a CL002 for every get and put.
+jobs:  # want CL023
+- name: build-image
+  plan:
+  - get: ci-dockerfile
+    trigger: true
+  - put: ci-image
+    params: {build: ci-dockerfile}

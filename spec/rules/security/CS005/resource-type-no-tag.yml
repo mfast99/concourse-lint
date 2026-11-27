@@ -1,0 +1,16 @@
+# CS005: resource_type image without a tag, reported at the repository line.
+resource_types:
+- name: slack
+  type: registry-image
+  source:
+    repository: cfcommunity/slack-notification-resource   # want CS005
+
+resources:
+- name: notify
+  type: slack
+  source: {url: ((slack-url))}
+
+jobs:
+- name: test
+  plan:
+  - put: notify

@@ -1,0 +1,11 @@
+# CS007 in flow style.
+resource_types:
+- {name: dind, type: registry-image, privileged: true, source: {repository: example/dind-resource, tag: "2.0.0"}}   # want CS007
+
+resources:
+- {name: thing, type: dind, source: {}}
+
+jobs:
+- name: x
+  plan:
+  - get: thing

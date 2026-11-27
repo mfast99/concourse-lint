@@ -1,0 +1,12 @@
+# CL018: a typo in a resource field. Concourse ignores "sorce", so the
+# resource has no source and only fails when it is checked.
+resources:
+- name: repo
+  type: git
+  sorce:                      # want CL018
+    uri: https://github.com/example/app.git
+
+jobs:
+- name: test
+  plan:
+  - get: repo

@@ -1,0 +1,11 @@
+# CL022: a spruce operator in a quoted string.
+resources:
+- name: repo
+  type: git
+  source:
+    uri: "(( concat \"https://github.com/\" meta.org \"/app.git\" ))"  # want CL022
+
+jobs:
+- name: test
+  plan:
+  - get: repo

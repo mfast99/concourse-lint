@@ -1,0 +1,12 @@
+# CS002: Slack webhook URL and Slack bot token.
+resources:
+- name: notify
+  type: mock
+  source:
+    url: https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX   # want CS002
+    bot: xoxb-000000000000-0000000000000-fakefakefakefakefakefake   # want CS002
+
+jobs:
+- name: test
+  plan:
+  - put: notify

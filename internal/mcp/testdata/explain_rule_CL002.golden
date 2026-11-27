@@ -1,0 +1,12 @@
+{
+  "id": "CL002",
+  "severity": "error",
+  "default_severity": "error",
+  "title": "get/put or a group refers to a missing resource",
+  "checked": "Every `get:` and `put:` step needs a resource under `resources:`. If `resource:` is set, only that value counts; the name after `get:`/`put:` is then just the artifact name.\n\nEvery entry under `groups[].resources` must also name a resource. These entries are exact names, not globs (unlike `groups[].jobs`).",
+  "example": "```yaml\nresources:\n- name: repo\n  type: git\n  source: {uri: https://github.com/example/app.git}\n\njobs:\n- name: build\n  plan:\n  - get: rep      # CL002: resource \"rep\" is not defined, did you mean \"repo\"?\n```",
+  "fix": "Correct the name or add the resource under `resources:`.",
+  "suppress": "```yaml\n# concourse-lint:ignore CL002 -- reason\n```\n\nSee [suppression](https://github.com/mfast99/concourse-lint/blob/main/spec/README.md#suppression).",
+  "docs": "https://github.com/mfast99/concourse-lint/blob/main/docs/rules/CL002.md"
+}
+

@@ -1,0 +1,8 @@
+# CL009 in flow style.
+resources:
+- {name: repo, type: git, source: {uri: "https://github.com/example/app.git"}}
+- {name: ci, type: git, source: {uri: "https://github.com/example/ci.git"}}
+
+jobs:
+- {name: unit, plan: [{get: repo}]}
+- {name: deploy, plan: [{get: repo}, {get: ci, passed: [unit]}]}   # want CL009

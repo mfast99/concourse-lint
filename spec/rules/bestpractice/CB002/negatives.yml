@@ -1,0 +1,14 @@
+# CB002 must NOT fire here: exactly one minute (60s, 1m), longer intervals,
+# "never", and no check_every at all.
+resources:
+- {name: a, type: git, check_every: 60s, source: {uri: "https://github.com/example/a.git"}}
+- {name: b, type: git, check_every: 1m, source: {uri: "https://github.com/example/b.git"}}
+- {name: c, type: git, check_every: 1m30s, source: {uri: "https://github.com/example/c.git"}}
+- {name: d, type: git, check_every: 2h30m, source: {uri: "https://github.com/example/d.git"}}
+- {name: e, type: git, check_every: never, source: {uri: "https://github.com/example/e.git"}}
+- {name: f, type: git, source: {uri: "https://github.com/example/f.git"}}
+
+jobs:
+- name: x
+  plan:
+  - in_parallel: [{get: a}, {get: b}, {get: c}, {get: d}, {get: e}, {get: f}]

@@ -1,0 +1,10 @@
+# CL004: typo in a built-in resource type.
+resources:
+- name: repo
+  type: gti                   # want CL004
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo

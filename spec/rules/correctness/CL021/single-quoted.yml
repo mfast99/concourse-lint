@@ -1,0 +1,14 @@
+# CL021: a literal tab inside a single-quoted string.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - task: test
+    file: repo/ci/test.yml
+    params:
+      MESSAGE: 'build	done'   # want CL021

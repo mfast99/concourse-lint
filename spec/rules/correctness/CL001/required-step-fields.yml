@@ -1,0 +1,17 @@
+# CL001: required fields of steps: set_pipeline and load_var need file:, a
+# step needs a name, and across needs at least one variable.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - set_pipeline: self        # want CL001
+  - load_var: version         # want CL001
+  - get:                      # want CL001
+  - task: unit
+    file: repo/ci/unit.yml
+    across: []                # want CL001

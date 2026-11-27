@@ -1,0 +1,37 @@
+{
+  "name": "concourse-lint",
+  "version": "0.0.0",
+  "description": "Linter and language server for Concourse CI pipelines: finds errors, security issues and bad practice before fly set-pipeline.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mfast99/concourse-lint.git",
+    "directory": "npm"
+  },
+  "homepage": "https://github.com/mfast99/concourse-lint#readme",
+  "bugs": "https://github.com/mfast99/concourse-lint/issues",
+  "keywords": [
+    "concourse",
+    "ci",
+    "pipeline",
+    "yaml",
+    "lint",
+    "linter",
+    "language-server"
+  ],
+  "bin": {
+    "concourse-lint": "bin/concourse-lint.js"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "NOTICE",
+    "THIRD_PARTY_LICENSES.txt"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test \"test/*.test.js\""
+  }
+}

@@ -1,0 +1,34 @@
+# CL002 in every kind of nesting: in_parallel (list and steps:), do, try,
+# step hooks and job hooks. Checks that the walker really visits everything.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: nested
+  plan:
+  - in_parallel:
+    - get: repo
+    - get: missing-a          # want CL002
+  - in_parallel:
+      steps:
+      - get: missing-b        # want CL002
+  - do:
+    - try:
+        get: missing-c        # want CL002
+  - task: unit
+    file: repo/ci/unit.yml
+    on_failure:
+      put: missing-d          # want CL002
+    ensure:
+      do:
+      - put: missing-e        # want CL002
+  on_success:
+    put: missing-f            # want CL002
+  on_abort:
+    put: missing-g            # want CL002
+  on_error:
+    put: missing-h            # want CL002
+  ensure:
+    put: missing-i            # want CL002

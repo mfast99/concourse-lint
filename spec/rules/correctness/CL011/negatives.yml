@@ -1,0 +1,103 @@
+# CL011 must NOT fire here: optional inputs, inputs provided via
+# input_mapping, earlier outputs, alias names, tasks from file: (their
+# inputs are unknown), and the artifact of a put (its implicit get stores it
+# under the put name).
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: build
+  plan:
+  - get: source
+    resource: repo
+  - task: compile
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: golang, tag: "1.24"}
+      inputs:
+      - name: source
+      - name: cache
+        optional: true
+      outputs: [{name: binary}]
+      run: {path: source/ci/compile.sh}
+  - task: mapped
+    input_mapping: {src: source}
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: alpine, tag: "3.20"}
+      inputs: [{name: src}, {name: binary}]
+      run: {path: src/ci/package.sh}
+  - task: from-file
+    file: source/ci/test.yml
+
+- name: after-put
+  plan:
+  - get: source
+    resource: repo
+  - put: repo
+    params: {repository: source}
+  - task: inspect
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: alpine, tag: "3.20"}
+      inputs: [{name: repo}]
+      run: {path: repo/ci/inspect.sh}
+
+# in_parallel with limit: 1 runs its steps one after another, in list order.
+- name: sequential-parallel
+  plan:
+  - in_parallel:
+      limit: 1
+      steps:
+      - get: source
+        resource: repo
+      - task: after-sibling
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source: {repository: alpine, tag: "3.20"}
+          inputs: [{name: source}]
+          run: {path: source/ci/lint.sh}
+
+# Outputs of a task from file: are unknown, so later inputs are not checked.
+- name: open-after-file-task
+  plan:
+  - get: source
+    resource: repo
+  - task: build
+    file: source/ci/build.yml
+  - task: use-unknown-output
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: alpine, tag: "3.20"}
+      inputs: [{name: binary}]
+      run: {path: binary/run.sh}
+
+# With across on do, the nested steps see each other's artifacts.
+- name: across-on-do
+  plan:
+  - do:
+    - get: source
+      resource: repo
+    - task: per-region
+      config:
+        platform: linux
+        image_resource:
+          type: registry-image
+          source: {repository: alpine, tag: "3.20"}
+        inputs: [{name: source}]
+        run: {path: source/ci/deploy.sh}
+    across:
+    - var: region
+      values: [eu-central-1, eu-west-1]

@@ -1,0 +1,21 @@
+# CL009: with several jobs in passed:, each one must use the resource.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+- name: docs
+  type: git
+  source: {uri: https://github.com/example/docs.git}
+
+jobs:
+- name: unit
+  plan:
+  - get: repo
+- name: lint-docs
+  plan:
+  - get: docs
+- name: release
+  plan:
+  - get: docs
+  - get: repo
+    passed: [unit, lint-docs] # want CL009

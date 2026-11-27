@@ -1,0 +1,12 @@
+# CL007: typo in the artifact name at the start of a file: path.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - task: unit
+    file: rpo/ci/unit.yml     # want CL007

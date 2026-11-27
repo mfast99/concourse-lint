@@ -1,0 +1,80 @@
+# CL008 must NOT fire here: ((vars)) without a dot, local variables after
+# load_var (also in nested steps and hooks), fields of a loaded value
+# (((.:release.version)) after load_var with format: json), and across
+# variables inside their step, also when across is on a do step.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: deploy
+  plan:
+  - get: repo
+  - load_var: version
+    file: repo/version
+  - do:
+    - task: deploy
+      file: repo/ci/deploy.yml
+      params:
+        VERSION: ((.:version))
+        TOKEN: ((deploy.token))
+        PLAIN: ((plain-var))
+      on_failure:
+        put: repo
+        params: {repository: repo, tag_prefix: "failed-((.:version))"}
+  - task: per-region
+    file: repo/ci/deploy.yml
+    across:
+    - var: region
+      values: [eu-central-1, eu-west-1]
+    params:
+      REGION: ((.:region))
+      VERSION: ((.:version))
+
+- name: release
+  plan:
+  - get: repo
+  - load_var: release
+    file: repo/release.json
+    format: json
+  - task: tag
+    file: repo/ci/tag.yml
+    params:
+      VERSION: ((.:release.version))
+      COMMIT: ((.:release.commit))
+  - do:
+    - task: deploy-env
+      file: repo/ci/deploy.yml
+      params: {ENVIRONMENT: ((.:env))}
+    - task: smoke-test
+      file: repo/ci/smoke.yml
+      params: {ENVIRONMENT: ((.:env))}
+    across:
+    - var: env
+      values: [staging, production]
+
+# A get, and the implicit get of a put, sets a local variable with its name:
+# the metadata of the fetched version (exec/get_step.go in Concourse 8.3.4).
+- name: version-metadata
+  plan:
+  - get: repo
+  - put: repo
+    params: {repository: repo, tag_prefix: "after-((.:repo.ref))"}
+  - task: report
+    file: repo/ci/report.yml
+    params: {COMMIT: ((.:repo.commit))}
+
+# A quoted name may contain a dot: ((.:"local.var")), also with a field
+# after it (vars.ParseReference in Concourse 8.3.4; testflight uses it).
+- name: quoted-name
+  plan:
+  - get: repo
+  - load_var: build.info
+    file: repo/build.json
+    format: json
+  - task: report
+    file: repo/ci/report.yml
+    params:
+      INFO: ((.:"build.info"))
+      VERSION: ((.:"build.info".version))

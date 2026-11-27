@@ -1,0 +1,26 @@
+# Built-in resource types need no entry under resource_types.
+# Flow-style mappings on one line. Must produce no findings.
+resources:
+- {name: src, type: git, source: {uri: "https://github.com/example/app.git"}}
+- {name: every-hour, type: time, source: {interval: 1h}}
+- {name: base-image, type: registry-image, source: {repository: alpine}}
+- {name: bucket, type: s3, source: {bucket: b, regexp: "x-(.*).tgz"}}
+- {name: ver, type: semver, source: {driver: s3, bucket: b, key: version}}
+- {name: lock, type: pool, source: {uri: "git@example.com:locks.git", branch: main, pool: env}}
+- {name: release, type: github-release, source: {owner: example, repository: app}}
+- {name: fake, type: mock, source: {}}
+
+jobs:
+- name: all
+  plan:
+  - in_parallel:
+    - get: src
+    - get: every-hour
+      trigger: true
+    - get: base-image
+    - get: bucket
+    - get: ver
+    - get: release
+    - get: fake
+  - put: lock
+    params: {acquire: true}

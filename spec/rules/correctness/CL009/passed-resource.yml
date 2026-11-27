@@ -1,0 +1,31 @@
+# CL009: the job in passed: exists but uses the resource neither via get
+# nor via put. Concourse rejects this.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+- name: image
+  type: registry-image
+  source: {repository: example/app}
+
+jobs:
+- name: unit
+  plan:
+  - get: repo
+    trigger: true
+- name: build
+  plan:
+  - get: repo
+    passed: [unit]
+  - put: image
+    params: {image: repo/image.tar}
+- name: deploy
+  plan:
+  - get: image
+    passed: [unit]            # want CL009
+  - get: repo
+    passed: [build]
+- name: deploy-ok
+  plan:
+  - get: image
+    passed: [build]

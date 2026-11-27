@@ -1,0 +1,7 @@
+# CL003 in flow style: job and plan on one line.
+resources:
+- {name: repo, type: git, source: {uri: "https://github.com/example/app.git"}}
+
+jobs:
+- {name: unit-fast, plan: [{get: repo, trigger: true}]}
+- {name: deploy, plan: [{get: repo, passed: [unit-slow]}]}   # want CL003

@@ -1,0 +1,12 @@
+# CL018: a typo in a job field. Concourse ignores "serial_group", so the job
+# does not wait for the other jobs of that group.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  serial_group: [deploy]      # want CL018
+  plan:
+  - get: repo

@@ -1,0 +1,25 @@
+# CL009 in a block list: reported at the line of the job that does not use
+# the resource.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+- name: image
+  type: registry-image
+  source: {repository: example/app}
+
+jobs:
+- name: unit
+  plan:
+  - get: repo
+- name: build
+  plan:
+  - get: repo
+  - put: image
+    params: {image: repo/image.tar}
+- name: deploy
+  plan:
+  - get: image
+    passed:
+    - build
+    - unit                    # want CL009

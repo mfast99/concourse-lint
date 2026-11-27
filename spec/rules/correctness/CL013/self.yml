@@ -1,0 +1,11 @@
+# CL013: a job that waits for itself never runs.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+    passed: [build]           # want CL013

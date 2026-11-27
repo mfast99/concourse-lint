@@ -1,0 +1,6 @@
+# want-anywhere CL000
+# Tabs are not allowed as indentation in YAML (the "- get" line starts with a tab).
+jobs:
+- name: test
+  plan:
+	- get: repo

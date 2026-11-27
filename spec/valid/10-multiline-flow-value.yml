@@ -1,0 +1,16 @@
+# Edge case: a plain value in a flow mapping that continues on the next
+# line, indented less than its key. Valid YAML, the value is "fast build".
+# goccy split it (CL000, goccy PR #953). Cross-check with fly.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - task: test
+    file: repo/ci/test.yml
+    params: {MODE: fast
+      build}

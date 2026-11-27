@@ -1,0 +1,21 @@
+# CL011: artifacts do not carry over from one job to another.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: fetch
+  plan:
+  - get: repo
+- name: build
+  plan:
+  - task: compile
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: golang, tag: "1.24"}
+      inputs:
+      - name: repo              # want CL011
+      run: {path: echo}

@@ -1,0 +1,10 @@
+# CS003: registry-image resource with insecure: true, in flow style.
+resources:
+- name: image
+  type: registry-image
+  source: {repository: registry.internal/app, insecure: true}   # want CS003
+
+jobs:
+- name: test
+  plan:
+  - get: image

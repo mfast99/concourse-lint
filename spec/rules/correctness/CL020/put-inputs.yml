@@ -1,0 +1,14 @@
+# CL020: a typo in inputs of a put. Concourse only knows "all" and "detect"
+# and silently ignores any other word, so it uses its default.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - put: repo
+    inputs: al                # want CL020
+    params: {repository: repo}

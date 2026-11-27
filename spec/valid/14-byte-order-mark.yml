@@ -1,0 +1,13 @@
+﻿# Edge case: the file starts with a UTF-8 byte order mark (invisible in
+# most editors, written by some Windows tools). goccy read it as part of the
+# first key (CL018 for "resources", then CL002, goccy PR #907).
+# Cross-check with fly validate-pipeline.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo

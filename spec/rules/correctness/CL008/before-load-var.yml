@@ -1,0 +1,16 @@
+# CL008: the local variable is used before the load_var that defines it.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: deploy
+  plan:
+  - get: repo
+  - task: deploy
+    file: repo/ci/deploy.yml
+    params:
+      VERSION: ((.:version))  # want CL008
+  - load_var: version
+    file: repo/version

@@ -1,0 +1,23 @@
+# want-anywhere CL000
+# "Billion laughs": every level repeats the previous one ten times, so these
+# few lines expand to ten billion values. fly: "document contains excessive
+# aliasing". The linter must report it quickly instead of hanging.
+resources:
+- name: repo
+  type: mock
+  source:
+    l0: &l0 [lol, lol, lol, lol, lol, lol, lol, lol, lol, lol]
+    l1: &l1 [*l0, *l0, *l0, *l0, *l0, *l0, *l0, *l0, *l0, *l0]
+    l2: &l2 [*l1, *l1, *l1, *l1, *l1, *l1, *l1, *l1, *l1, *l1]
+    l3: &l3 [*l2, *l2, *l2, *l2, *l2, *l2, *l2, *l2, *l2, *l2]
+    l4: &l4 [*l3, *l3, *l3, *l3, *l3, *l3, *l3, *l3, *l3, *l3]
+    l5: &l5 [*l4, *l4, *l4, *l4, *l4, *l4, *l4, *l4, *l4, *l4]
+    l6: &l6 [*l5, *l5, *l5, *l5, *l5, *l5, *l5, *l5, *l5, *l5]
+    l7: &l7 [*l6, *l6, *l6, *l6, *l6, *l6, *l6, *l6, *l6, *l6]
+    l8: &l8 [*l7, *l7, *l7, *l7, *l7, *l7, *l7, *l7, *l7, *l7]
+    l9: &l9 [*l8, *l8, *l8, *l8, *l8, *l8, *l8, *l8, *l8, *l8]
+
+jobs:
+- name: test
+  plan:
+  - get: repo

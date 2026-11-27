@@ -1,0 +1,18 @@
+# credential is secret-like, git.internal may use http://, 45s is fine.
+resources:
+- name: repo
+  type: git
+  check_every: 45s
+  source:
+    uri: http://git.internal/app.git
+    db_credential: plain      # want CS001
+- name: mirror
+  type: git
+  check_every: 10s            # want CB002
+  source: {uri: "http://mirror.internal/app.git"}   # want CS004
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - get: mirror

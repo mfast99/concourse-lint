@@ -1,0 +1,13 @@
+# CL005: quoting does not change a name. repo and "repo" are the same.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/a.git}
+- name: "repo"                # want CL005
+  type: git
+  source: {uri: https://github.com/example/b.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo

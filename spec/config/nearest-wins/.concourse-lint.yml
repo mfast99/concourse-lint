@@ -1,0 +1,3 @@
+# Applies to this folder, but not to sub/, which has its own file.
+rules:
+  CS008: off

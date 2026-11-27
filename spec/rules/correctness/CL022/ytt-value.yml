@@ -1,0 +1,12 @@
+# CL022: a ytt marker behind a value. Without CL022 the empty uri would be
+# checked like a real one.
+resources:
+- name: repo
+  type: git
+  source:
+    uri: #@ data.values.uri  # want CL022
+
+jobs:
+- name: test
+  plan:
+  - get: repo

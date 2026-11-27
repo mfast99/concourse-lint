@@ -1,0 +1,12 @@
+# CL007: set_pipeline reads its file from an artifact as well.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: configure
+  plan:
+  - get: repo
+  - set_pipeline: child
+    file: config/child.yml    # want CL007

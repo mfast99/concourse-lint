@@ -1,0 +1,11 @@
+### concourse-lint
+
+1 error, 1 warning, 1 info in 3 files.
+
+| Location | Severity | Rule | Message |
+|---|---|---|---|
+| [`ci/pipeline.yml:9:3`](https://github.com/org/repo/blob/abc123/ci/pipeline.yml#L9) | warning | [CS008](https://github.com/mfast99/concourse-lint/blob/main/docs/rules/CS008.md) | job 'build' has public build logs |
+| [`ci/pipeline.yml:13:10`](https://github.com/org/repo/blob/abc123/ci/pipeline.yml#L13) | error | [CL002](https://github.com/mfast99/concourse-lint/blob/main/docs/rules/CL002.md) | resource 'rep' is not defined (did you mean 'repo'?) |
+| `<stdin>:13:5` | info | [CS009](https://github.com/mfast99/concourse-lint/blob/main/docs/rules/CS009.md) | load\_var 'version' reveals the value in the log |
+
+- Could not read `missing.yml`: open missing.yml: no such file or directory

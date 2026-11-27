@@ -1,0 +1,12 @@
+# CS001: quoting does not hide a fixed value.
+resources:
+- name: api
+  type: mock
+  source:
+    password: "not-a-real-secret"   # want CS001
+    client_secret: 's3cr3t'         # want CS001
+
+jobs:
+- name: test
+  plan:
+  - get: api

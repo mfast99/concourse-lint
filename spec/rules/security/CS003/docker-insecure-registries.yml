@@ -1,0 +1,12 @@
+# CS003: docker-image resource with a non-empty insecure_registries list.
+resources:
+- name: legacy
+  type: docker-image
+  source:
+    repository: registry.internal/legacy
+    insecure_registries: ["registry.internal:5000"]   # want CS003
+
+jobs:
+- name: test
+  plan:
+  - get: legacy

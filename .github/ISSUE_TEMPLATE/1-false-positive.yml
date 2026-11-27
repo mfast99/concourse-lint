@@ -1,0 +1,38 @@
+name: False positive
+description: A rule reports something that is actually fine.
+title: "fix(<RULE-ID>): "
+labels: [false-positive, triage]
+body:
+  - type: input
+    id: rule
+    attributes:
+      label: Rule ID
+      placeholder: CS001
+    validations:
+      required: true
+  - type: textarea
+    id: snippet
+    attributes:
+      label: Smallest pipeline snippet that triggers it
+      description: Remove everything unrelated. Replace real secrets and hostnames.
+      render: yaml
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Output of concourse-lint
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why is this not a problem?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: concourse-lint version
+      placeholder: v0.2.0 or commit hash

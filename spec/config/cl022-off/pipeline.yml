@@ -1,0 +1,14 @@
+# CL022 is off, so the spruce template is checked like a pipeline.
+meta:                          # want CL018
+  repo: https://github.com/example/app.git
+
+resources:
+- name: repo
+  type: git
+  source:
+    uri: (( grab meta.repo ))
+
+jobs:
+- name: test
+  plan:
+  - get: repo

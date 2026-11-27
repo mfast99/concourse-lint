@@ -1,0 +1,71 @@
+# CS001 must NOT fire here. Collected sources of false positives: every new
+# report from real-world use is added here as a line.
+resources:
+- name: repo
+  type: git
+  source:
+    uri: https://github.com/example/app.git
+    private_key: ((git.private_key))       # plain variable
+    password: "((git.password))"           # quoted variable
+    username: deploy-bot                   # not a secret key
+- name: vault-ref
+  type: mock
+  source:
+    secret_name: prod-db-credentials       # name of a secret
+    token_file: /var/run/secrets/token     # path
+    password_file: /etc/app/password       # path
+    key: app/config.json                   # "key" alone is too generic
+    key_id: ((kms.key_id))
+    public_key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExampleOnlyNotReal example
+    token_url: https://auth.example.com/oauth/token
+    password_policy: strong
+    secret_access_key:                     # empty
+    api_key: ""                            # empty
+    tokens_enabled: true                   # boolean
+    max_tokens: 4096                       # number, plural
+    sort_key: created_at                   # "sort" + key
+    cache_key: deps-v1
+- name: bucket
+  type: s3
+  source:
+    bucket: artifacts
+    regexp: app-(.*).tgz
+    aws_role_arn: arn:aws:iam::123456789012:role/ci
+- name: github-token-auth
+  type: git
+  source:
+    uri: https://github.com/example/app.git
+    username: ((github.token))
+    password: x-oauth-basic                # GitHub's fixed word for token auth
+- name: placeholders
+  type: mock
+  source:
+    password: REDACTED                     # redacted export
+    client_secret: <replace-me>            # placeholder in angle brackets
+    api_token: YOUR-PIVNET-API-TOKEN-GOES-HERE
+    access_key: REPLACE-WITH-YOUR-ACCESS-KEY
+
+jobs:
+- name: deploy
+  plan:
+  - get: repo
+  - get: vault-ref
+  - get: bucket
+  - get: github-token-auth
+  - get: placeholders
+  - task: deploy
+    file: repo/ci/deploy.yml
+    params:
+      PASSWORD_LENGTH: 32
+      TOKEN_AUDIENCE: sts.amazonaws.com
+      SECRET: ((deploy.secret))
+      API_KEY_HEADER: X-Api-Key
+      SKIP_PASSWORD_PROMPT: true
+      DB_PASSWORD: ((db.password))
+      DB_TOKEN: ((db.token))
+  - load_var: token
+    file: repo/token
+  - task: local-var
+    file: repo/ci/deploy.yml
+    params:
+      DEPLOY_TOKEN: ((.:token))                # local variable

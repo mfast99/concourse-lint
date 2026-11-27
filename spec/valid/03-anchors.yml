@@ -1,0 +1,27 @@
+# YAML anchors, aliases and merge keys are common in pipelines. Must produce no findings.
+resources:
+- name: repo
+  type: git
+  source: &git-source
+    uri: https://github.com/example/app.git
+    branch: main
+- name: repo-docs
+  type: git
+  source:
+    <<: *git-source
+    paths: [docs/]
+
+jobs:
+- name: lint
+  plan:
+  - get: repo
+    trigger: true
+  - &run-check
+    task: check
+    file: repo/ci/check.yml
+- name: docs
+  plan:
+  - get: repo
+  - get: repo-docs
+    trigger: true
+  - *run-check

@@ -1,0 +1,24 @@
+# CL014: a task output has the name of a fetched resource but does not take
+# it as input. The output silently replaces the fetched content.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+- name: version
+  type: semver
+  source: {driver: git, uri: "https://github.com/example/app.git", branch: version, file: version}
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+  - get: version
+  - task: bump
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: alpine, tag: "3.20"}
+      inputs: [{name: repo}]
+      outputs: [{name: version}]   # want CL014
+      run: {path: repo/ci/bump.sh}

@@ -1,0 +1,46 @@
+# Nested steps, hooks, set_pipeline and task outputs as the source for
+# later "file:" paths. Must produce no findings.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+- name: artifacts
+  type: s3
+  source:
+    bucket: build-artifacts
+    regexp: app-(.*).tgz
+
+jobs:
+- name: reconfigure
+  plan:
+  - get: repo
+    trigger: true
+  - set_pipeline: self
+    file: repo/ci/pipeline.yml
+
+- name: package
+  plan:
+  - get: repo
+    trigger: true
+    passed: [reconfigure]
+  - task: generate-tasks
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: alpine, tag: "3.20"}
+      inputs: [{name: repo}]
+      outputs: [{name: generated}]
+      run: {path: repo/ci/generate.sh}
+  - task: run-generated
+    file: generated/task.yml
+  - do:
+    - try:
+        put: artifacts
+        params: {file: generated/app-*.tgz}
+    - task: verify
+      file: repo/ci/verify.yml
+      on_success:
+        do:
+        - task: report
+          file: repo/ci/report.yml

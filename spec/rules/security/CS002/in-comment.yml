@@ -1,0 +1,11 @@
+# CS002: a token in a comment is leaked just the same.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  # old token: ghp_0123456789abcdefghijklmnopqrstuvwxyz   # want CS002
+  - get: repo

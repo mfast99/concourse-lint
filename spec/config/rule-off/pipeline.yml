@@ -1,0 +1,13 @@
+# CS008 and CL018 are off; other rules still run.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+  x-owner: platform-team
+
+jobs:
+- name: test
+  public: true
+  plan:
+  - get: repo
+- name: empty                 # want CB003

@@ -1,0 +1,11 @@
+# CS008 is not off here: only the nearest config applies.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  public: true                # want CS008
+  plan:
+  - get: repo

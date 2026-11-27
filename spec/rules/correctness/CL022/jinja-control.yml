@@ -1,0 +1,12 @@
+# CL022: a Jinja template with a control line (greenplum, apache/geode).
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+{% for env in environments %}  # want CL022
+- name: deploy-{{ env }}
+  plan:
+  - get: repo
+{% endfor %}

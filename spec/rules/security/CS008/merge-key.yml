@@ -1,0 +1,14 @@
+# CS008 via a merge key (<<): the setting comes from one anchor, so there is
+# exactly one finding, at the definition.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- &defaults
+  name: build
+  public: true                # want CS008
+  plan: [{get: repo}]
+- <<: *defaults
+  name: build-arm

@@ -1,0 +1,26 @@
+# CL007: an artifact from an on_failure hook only exists when the step
+# failed, and then the following steps do not run.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+- name: rollback
+  type: git
+  source: {uri: https://github.com/example/rollback.git}
+
+jobs:
+- name: deploy
+  plan:
+  - get: repo
+  - task: deploy
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: alpine, tag: "3.20"}
+      inputs: [{name: repo}]
+      run: {path: repo/ci/deploy.sh}
+    on_failure:
+      get: rollback
+  - task: report
+    file: rollback/report.yml   # want CL007

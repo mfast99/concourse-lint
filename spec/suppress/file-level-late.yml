@@ -1,0 +1,10 @@
+# ignore-file applies to the whole file, also when it is not at the top.
+resources:
+- name: repo
+  type: git
+  source: {uri: "http://git.internal/app.git"}
+
+jobs:
+# concourse-lint:ignore-file CS004 -- internal mirror without TLS
+- name: x
+  plan: [{get: repo}]

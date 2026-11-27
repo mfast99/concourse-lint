@@ -1,0 +1,14 @@
+# CL006: "get: cache" with resource: repo uses repo, not the resource "cache".
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+- name: cache                 # want CL006
+  type: mock
+  source: {}
+
+jobs:
+- name: test
+  plan:
+  - get: cache
+    resource: repo

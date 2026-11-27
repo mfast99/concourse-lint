@@ -1,0 +1,48 @@
+name: Rule proposal
+description: Suggest a new check.
+title: "feat: new rule: "
+labels: [rule-proposal, triage]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does the rule catch?
+      description: What goes wrong in Concourse (rejected pipeline, runtime failure, security risk, bad practice)?
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - CL – correctness
+        - CS – security
+        - CB – best practice
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Suggested severity
+      description: Rules prone to false positives are at most a warning.
+      options: [error, warning, info]
+    validations:
+      required: true
+  - type: textarea
+    id: hits
+    attributes:
+      label: Pipeline snippets that should be reported
+      render: yaml
+    validations:
+      required: true
+  - type: textarea
+    id: near-misses
+    attributes:
+      label: Similar snippets that must NOT be reported
+      description: These become the rule's negatives.yml.
+      render: yaml
+  - type: textarea
+    id: refs
+    attributes:
+      label: References
+      description: Concourse docs, incidents, CVEs, …

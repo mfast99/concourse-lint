@@ -1,0 +1,48 @@
+# CL017 negatives: values that Concourse passes on unchanged, quoted values,
+# and numbers in fields that are numbers anyway.
+resource_types:
+- name: slack-notification
+  type: registry-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+    tag: "1.10"
+
+resources:
+- name: notify
+  type: slack-notification
+  source: {url: ((slack-webhook))}
+- name: repo
+  type: git
+  source:
+    uri: https://github.com/example/app.git
+    branch: release-1.10
+    tag_filter: v1.10.*
+
+jobs:
+- name: build
+  max_in_flight: 1
+  plan:
+  - get: repo
+    attempts: 3
+  - task: build
+    file: repo/ci/build.yml
+    params:
+      VERSION: 1.10.0
+      PREFIXED: v1.10
+      IMAGE: 3.20-alpine
+      RATIO: 1.5
+      COUNT: 10
+      ZERO: 0
+      TIME: 1:20
+      DATE: 2024-01-01
+      QUOTED: "0022"
+      SINGLE: '1.20'
+      BLOCK: |
+        1.10
+  - put: notify
+    params: {text: "1.10 done"}
+- name: release-1.10
+  serial_groups: [release, "2.0", v3, 12]
+  plan:
+  - get: repo
+    passed: [build]

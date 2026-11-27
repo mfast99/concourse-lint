@@ -1,0 +1,19 @@
+# CL002 in groups: resources: Concourse rejects a group that lists a resource
+# that does not exist. Unlike jobs:, the entries are exact names, no globs.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+
+groups:
+- name: all
+  jobs: [test]
+  resources:
+  - repo
+  - rpo                       # want CL002
+  - "r*"                      # want CL002

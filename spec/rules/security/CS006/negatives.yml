@@ -1,0 +1,32 @@
+# CS006 must NOT fire here: privileged: false, a task param or a source field
+# named "privileged", and a privileged resource_type (that is CS007).
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+- name: thing
+  type: mock
+  source: {privileged: true}
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+  - get: thing
+  - task: unprivileged
+    file: repo/ci/test.yml
+    privileged: false
+  - task: explicit-no
+    file: repo/ci/test.yml
+    privileged: no
+  - task: only-a-param
+    file: repo/ci/test.yml
+    params: {privileged: true, PRIVILEGED: "true"}
+  - task: inline-param
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: alpine, tag: "3.20"}
+      params: {privileged: true}
+      run: {path: echo}

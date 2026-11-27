@@ -1,0 +1,22 @@
+# CL010 must NOT fire here: exact names, "*", a prefix glob that matches,
+# and a job that is in several groups.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+groups:
+- name: all
+  jobs: ["*"]
+- name: deploys
+  jobs: ["deploy-*"]
+- name: ci
+  jobs: [test, deploy-staging]
+
+jobs:
+- name: test
+  plan: [{get: repo}]
+- name: deploy-staging
+  plan: [{get: repo}]
+- name: deploy-production
+  plan: [{get: repo}]

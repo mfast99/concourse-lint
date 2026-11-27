@@ -1,0 +1,5 @@
+# Options of CS001, CS004 and CB002.
+rules:
+  CS001: {extra_words: [credential]}
+  CS004: {allowed_hosts: [git.internal]}
+  CB002: {min_interval: 30s}

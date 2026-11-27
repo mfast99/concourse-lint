@@ -1,0 +1,18 @@
+# CL004: image_resource in an inline task needs a known type.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - task: unit
+    config:
+      platform: linux
+      image_resource:
+        type: registry_image  # want CL004
+        source: {repository: golang, tag: "1.24"}
+      inputs: [{name: repo}]
+      run: {path: repo/ci/unit.sh}

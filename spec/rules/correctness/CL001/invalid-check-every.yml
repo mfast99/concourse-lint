@@ -1,0 +1,11 @@
+# CL001: check_every must be a Go duration (e.g. 10m) or "never".
+resources:
+- name: repo
+  type: git
+  check_every: soon           # want CL001
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo

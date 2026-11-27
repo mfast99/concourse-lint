@@ -1,0 +1,2 @@
+# Excludes a folder and a glob.
+exclude: ["generated", "templates/*.yml"]

@@ -1,0 +1,14 @@
+# CL015: one unknown ID in a list. The known IDs of the list still apply.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+  - task: image
+    # concourse-lint:ignore CS006,CS060   # want CL015
+    privileged: true
+    file: repo/ci/build.yml

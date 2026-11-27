@@ -1,0 +1,14 @@
+# CL019: a step timeout that is no Go duration. fly accepts it, because the
+# value may contain ((vars), but the step fails every time it runs.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - task: unit
+    file: repo/ci/unit.yml
+    timeout: 1d               # want CL019

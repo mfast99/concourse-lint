@@ -1,0 +1,12 @@
+# CL022: a spruce array merge operator without an argument.
+resources:
+- (( append ))  # want CL022
+- name: repo
+  type: git
+  source:
+    uri: https://github.com/example/app.git
+
+jobs:
+- name: test
+  plan:
+  - get: repo

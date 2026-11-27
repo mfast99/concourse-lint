@@ -1,0 +1,17 @@
+# want-anywhere CL000
+# An alias may only refer to an anchor defined above it; here the alias comes
+# first. fly: "unknown anchor 'git-source' referenced".
+resources:
+- name: docs
+  type: git
+  source: *git-source
+- name: repo
+  type: git
+  source: &git-source
+    uri: https://github.com/example/app.git
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - get: docs

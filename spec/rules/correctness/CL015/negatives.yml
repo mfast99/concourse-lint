@@ -1,0 +1,19 @@
+# CL015 must NOT fire here: valid suppression comments in every form,
+# suppressions that suppress nothing, and text that only looks like one.
+# concourse-lint:ignore-file CS005 -- nothing to suppress, still valid
+resources:
+- name: repo
+  type: git
+  source: {uri: "http://git.internal/app.git"}  # concourse-lint:ignore CS004 -- internal mirror
+
+jobs:
+# Checked by concourse-lint in CI.
+- name: build
+  plan:
+  - get: repo
+  - task: image
+    # concourse-lint:ignore CS006,CS001 -- oci-build-task needs this
+    privileged: true
+    file: repo/ci/build.yml
+    params:
+      NOTE: "concourse-lint:ignore"

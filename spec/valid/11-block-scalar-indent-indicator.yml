@@ -1,0 +1,18 @@
+# Edge case: a block scalar with an explicit indentation indicator (|2-)
+# and a blank line at the end of the file. Valid YAML. goccy rejected the
+# blank line as under-indented (CL000, goccy PR #975). Cross-check with fly.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - task: test
+    file: repo/ci/test.yml
+    params:
+      SCRIPT: |2-
+          echo indented
+

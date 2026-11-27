@@ -1,0 +1,16 @@
+# concourse-lint:ignore-file CL022 -- close enough to a pipeline
+# A suppressed CL022 works like CL022 off: the template is checked like a
+# pipeline.
+meta:                          # want CL018
+  repo: https://github.com/example/app.git
+
+resources:
+- name: repo
+  type: git
+  source:
+    uri: (( grab meta.repo ))
+
+jobs:
+- name: test
+  plan:
+  - get: repo

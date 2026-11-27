@@ -1,0 +1,3 @@
+# want-config-error
+rules:
+  CS008: fatal

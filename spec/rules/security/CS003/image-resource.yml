@@ -1,0 +1,21 @@
+# CS003: insecure registry for a task image, with a quoted "true".
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - task: unit
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source:
+          repository: registry.internal/builder
+          tag: "2.1"
+          insecure: "true"    # want CS003
+      inputs: [{name: repo}]
+      run: {path: repo/ci/unit.sh}

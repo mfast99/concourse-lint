@@ -1,0 +1,14 @@
+# CS001: a secret in a block scalar (|) is reported at the line of the key.
+resources:
+- name: repo
+  type: git
+  source:
+    uri: git@github.com:example/app.git
+    private_key: |            # want CS001
+      bm90LWEtcmVhbC1rZXktanVzdC1hLXRlc3Q=
+      c2Vjb25kLWxpbmUtb2YtZmFrZS1rZXk=
+
+jobs:
+- name: test
+  plan:
+  - get: repo

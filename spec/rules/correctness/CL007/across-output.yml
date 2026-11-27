@@ -1,0 +1,25 @@
+# CL007: every iteration of across runs in its own scope, so an output of a
+# step with across is not available after it ("missing inputs").
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - task: generate
+    across:
+    - var: region
+      values: [eu-central-1, eu-west-1]
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: alpine, tag: "3.20"}
+      inputs: [{name: repo}]
+      outputs: [{name: generated}]
+      run: {path: repo/ci/generate.sh}
+  - task: from-output
+    file: generated/task.yml  # want CL007

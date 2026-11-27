@@ -1,0 +1,14 @@
+# CL024: content after the document end marker ... is ignored too.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+...  # want CL024
+groups:
+- name: all
+  jobs: [test]

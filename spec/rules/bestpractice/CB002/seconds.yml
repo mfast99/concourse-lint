@@ -1,0 +1,10 @@
+# CB002: check_every in seconds on a resource.
+resources:
+- name: repo
+  type: git
+  check_every: 10s            # want CB002
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan: [{get: repo}]

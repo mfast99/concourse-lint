@@ -1,0 +1,3 @@
+# CL022 off: templates are checked like pipelines.
+rules:
+  CL022: off

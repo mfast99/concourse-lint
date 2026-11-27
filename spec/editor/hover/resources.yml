@@ -1,0 +1,26 @@
+# Hover on a resource: its type and check_every, and the jobs that get or
+# put it. Nothing from source: (it may hold secrets).
+resources:
+- name: repo
+#        ^ hover "resource repo | type: git | check_every: 10m | used by: build (get), release (get, put)"
+  type: git
+  check_every: 10m
+  source: {uri: https://github.com/example/app.git, private_key: ((key))}
+- name: version
+  type: semver
+  source: {driver: git, uri: https://github.com/example/version.git, branch: version, file: number}
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+#         ^ hover "resource repo | type: git | check_every: 10m | used by: build (get), release (get, put)"
+- name: release
+  plan:
+  - get: repo
+    passed: [build]
+  - get: version
+#          ^ hover "resource version | type: semver | used by: release (get)"
+  - put: repo
+    params: {repository: repo}
+#                         ^ hover none

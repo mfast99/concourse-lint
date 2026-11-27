@@ -1,0 +1,16 @@
+# CL010: a list with a matching glob and a missing job. Only the missing job is
+# reported, not the glob.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+groups:
+- name: deploys
+  jobs:
+  - "deploy-*"
+  - relase                    # want CL010
+
+jobs:
+- name: deploy-staging
+  plan: [{get: repo}]

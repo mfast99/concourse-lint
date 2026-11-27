@@ -1,0 +1,18 @@
+# CL010: typo in a job name inside a group. Follow-up: "build" is then in
+# no group (CL016).
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+groups:
+- name: ci
+  jobs:
+  - test
+  - biuld                     # want CL010
+
+jobs:
+- name: test
+  plan: [{get: repo}]
+- name: build                 # want CL016
+  plan: [{get: repo}]

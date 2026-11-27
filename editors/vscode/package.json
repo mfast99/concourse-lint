@@ -1,0 +1,95 @@
+{
+  "name": "concourse-lint",
+  "displayName": "Concourse Lint",
+  "description": "Finds errors, security issues and bad practice in Concourse CI pipelines while you type.",
+  "version": "0.0.1",
+  "publisher": "mfast99",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mfast99/concourse-lint.git",
+    "directory": "editors/vscode"
+  },
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "categories": [
+    "Linters"
+  ],
+  "keywords": [
+    "concourse",
+    "ci",
+    "pipeline",
+    "yaml",
+    "lint"
+  ],
+  "activationEvents": [
+    "onLanguage:yaml",
+    "onLanguage:concourse-pipeline"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "concourse-pipeline",
+        "aliases": [
+          "Concourse Pipeline"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "concourse-pipeline",
+        "scopeName": "source.concourse-pipeline",
+        "path": "./syntaxes/concourse-pipeline.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "concourse-lint.restart",
+        "title": "Restart Language Server",
+        "category": "Concourse Lint"
+      }
+    ],
+    "configuration": {
+      "title": "Concourse Lint",
+      "properties": {
+        "concourse-lint.path": {
+          "type": "string",
+          "default": "",
+          "scope": "machine",
+          "markdownDescription": "Path to a `concourse-lint` binary to use instead of the one in the extension (e.g. your own build). Empty: the bundled binary, or `concourse-lint` from `PATH`. Only in user settings, never per workspace, because it runs a program."
+        },
+        "concourse-lint.trace.server": {
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "Log the messages between VS Code and the language server in the output panel."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "esbuild src/extension.ts --bundle --platform=node --format=cjs --target=node20 --external:vscode --minify --sourcemap --outfile=dist/extension.js",
+    "check": "tsc --noEmit",
+    "test": "node --test \"src/**/*.test.ts\"",
+    "package": "../../scripts/package-vscode.sh"
+  },
+  "dependencies": {
+    "vscode-languageclient": "11.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "@types/vscode": "1.100.0",
+    "@vscode/vsce": "4.1.1",
+    "esbuild": "0.28.2",
+    "ovsx": "1.4.0",
+    "typescript": "7.0.2"
+  },
+  "packageManager": "pnpm@12.21.0"
+}

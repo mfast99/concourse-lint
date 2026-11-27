@@ -1,0 +1,16 @@
+# CL008: typo in the name of a local variable.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: deploy
+  plan:
+  - get: repo
+  - load_var: version
+    file: repo/version
+  - task: deploy
+    file: repo/ci/deploy.yml
+    params:
+      VERSION: ((.:verison))  # want CL008

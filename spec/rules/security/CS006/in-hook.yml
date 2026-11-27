@@ -1,0 +1,20 @@
+# CS006 in step hooks and job hooks.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+  - task: test
+    file: repo/ci/test.yml
+    on_failure:
+      task: collect-logs
+      file: repo/ci/logs.yml
+      privileged: true        # want CS006
+  ensure:
+    task: cleanup
+    file: repo/ci/cleanup.yml
+    privileged: true          # want CS006

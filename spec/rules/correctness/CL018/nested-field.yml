@@ -1,0 +1,20 @@
+# CL018: a typo below a task config. Concourse rejects unknown fields of the
+# config itself, but ignores them in run:, so the task runs in the wrong
+# directory.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - task: unit
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: golang, tag: "1.22"}
+      inputs: [{name: repo}]
+      run: {path: make, dirr: repo}   # want CL018

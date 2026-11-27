@@ -1,0 +1,15 @@
+# concourse-lint:ignore-file CS004 -- internal mirror without TLS
+# Suppresses CS004 in the whole file, other rules stay active.
+resources:
+- name: repo
+  type: git
+  source: {uri: "http://git.internal/app.git"}
+- name: other
+  type: git
+  source:
+    uri: http://git.internal/other.git
+    skip_ssl_verification: true   # want CS003
+
+jobs:
+- name: x
+  plan: [{get: repo}, {get: other}]

@@ -1,0 +1,19 @@
+# CL017: the image tag of a resource type without quotes. Concourse reads 1.10
+# as a number and pulls the tag "1.1".
+resource_types:
+- name: slack-notification
+  type: registry-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+    tag: 1.10                 # want CL017
+
+resources:
+- name: notify
+  type: slack-notification
+  source: {url: ((slack-webhook))}
+
+jobs:
+- name: test
+  plan:
+  - put: notify
+    params: {text: done}

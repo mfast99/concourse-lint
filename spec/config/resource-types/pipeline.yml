@@ -1,0 +1,14 @@
+# vault-secret is known through the config; a typo still is CL004.
+resources:
+- name: secret
+  type: vault-secret
+  source: {path: /concourse/main}
+- name: other
+  type: vault-secert          # want CL004
+  source: {path: /concourse/other}
+
+jobs:
+- name: test
+  plan:
+  - get: secret
+  - get: other

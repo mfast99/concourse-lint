@@ -1,0 +1,18 @@
+# CL007: the artifact is fetched, but only AFTER the step that needs it.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+- name: ci
+  type: git
+  source: {uri: https://github.com/example/ci.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - task: too-early
+    file: ci/tasks/test.yml   # want CL007
+  - get: ci
+  - task: in-time
+    file: ci/tasks/test.yml

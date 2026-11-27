@@ -1,0 +1,24 @@
+# CL016 must NOT fire here: every job is in a group, via exact names, "*" or
+# a prefix glob, and a job may be in several groups.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+groups:
+- name: all
+  jobs: ["*"]
+- name: deploys
+  jobs: ["deploy-*"]
+- name: ci
+  jobs: [test, deploy-staging]
+
+jobs:
+- name: test
+  plan: [{get: repo}]
+- name: deploy-staging
+  plan: [{get: repo}]
+- name: deploy-production
+  plan: [{get: repo}]
+- name: unlisted-but-covered-by-star
+  plan: [{get: repo}]

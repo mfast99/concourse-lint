@@ -1,0 +1,18 @@
+# CL002 in an anchor that is used twice: exactly ONE finding at the
+# place where the text is (the anchor definition), not at the alias.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: a
+  plan:
+  - get: repo
+  - &notify
+    put: slack                # want CL002
+    params: {text: done}
+- name: b
+  plan:
+  - get: repo
+  - *notify

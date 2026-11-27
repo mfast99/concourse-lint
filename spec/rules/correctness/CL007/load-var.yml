@@ -1,0 +1,12 @@
+# CL007: load_var reads its file from an artifact as well.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: release
+  plan:
+  - get: repo
+  - load_var: version
+    file: version/number      # want CL007

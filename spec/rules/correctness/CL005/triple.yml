@@ -1,0 +1,13 @@
+# CL005: a name used three times gives two findings: the 2nd and 3rd occurrence.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan: [{get: repo}]
+- name: test                  # want CL005
+  plan: [{get: repo}]
+- name: test                  # want CL005
+  plan: [{get: repo}]

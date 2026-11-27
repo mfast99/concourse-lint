@@ -1,0 +1,20 @@
+# CL005: duplicate prototype.
+prototypes:
+- name: npm
+  type: registry-image
+  source: {repository: example/npm-prototype, tag: "1.0.0"}
+- name: npm                   # want CL005
+  type: registry-image
+  source: {repository: example/npm-prototype, tag: "2.0.0"}
+
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - run: test
+    type: npm

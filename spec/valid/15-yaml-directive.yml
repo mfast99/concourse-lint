@@ -1,0 +1,14 @@
+# Edge case: a %YAML directive before the document. Valid YAML; goccy
+# returns the directive as a document of its own, which is not the
+# pipeline. Cross-check with fly validate-pipeline.
+%YAML 1.1
+---
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo

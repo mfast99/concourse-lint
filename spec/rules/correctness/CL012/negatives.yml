@@ -1,0 +1,28 @@
+# CL012 must NOT fire here: mappings to existing artifacts, output_mapping on
+# a task from file: (outputs unknown), and renamed outputs used afterwards.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: build
+  plan:
+  - get: source
+    resource: repo
+  - task: compile
+    file: source/ci/compile.yml
+    input_mapping: {repo: source}
+    output_mapping: {anything: compiled}
+  - task: package
+    output_mapping: {dist: package}
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: alpine, tag: "3.20"}
+      inputs: [{name: compiled}]
+      outputs: [{name: dist}]
+      run: {path: compiled/package.sh}
+  - task: publish
+    file: package/publish.yml

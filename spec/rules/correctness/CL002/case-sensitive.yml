@@ -1,0 +1,11 @@
+# CL002: resource names are case-sensitive. "Repo" is not "repo".
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - get: Repo                 # want CL002

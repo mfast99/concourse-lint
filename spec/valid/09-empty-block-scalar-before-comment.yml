@@ -1,0 +1,18 @@
+# Edge case: an empty block scalar, then a blank line and a comment at
+# column 1. Valid YAML, the value is "". goccy read the comment as a second
+# value (CL000, goccy PR #942). Cross-check with fly validate-pipeline.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - task: test
+    file: repo/ci/test.yml
+    params:
+      NOTES: |
+
+# The notes are filled in by the release job.

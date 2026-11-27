@@ -1,0 +1,6 @@
+# CL002 in flow style: the whole plan is on one line.
+resources:
+- {name: repo, type: git, source: {uri: "https://github.com/example/app.git"}}
+
+jobs:
+- {name: test, plan: [{get: repo}, {put: rpo}]}   # want CL002

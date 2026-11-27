@@ -1,0 +1,5 @@
+# want-excluded
+jobs:
+- name: test
+  plan:
+  - get: missing

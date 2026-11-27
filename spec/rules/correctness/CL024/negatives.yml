@@ -1,0 +1,15 @@
+# CL024 must NOT fire here: --- before the first document (after
+# comments), and --- at the end with only comments after it.
+---
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+---
+# nothing more
+

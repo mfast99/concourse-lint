@@ -1,0 +1,10 @@
+# CL016 in flow style.
+resources:
+- {name: repo, type: git, source: {uri: "https://github.com/example/app.git"}}
+
+groups:
+- {name: ci, jobs: [test]}
+
+jobs:
+- {name: test, plan: [{get: repo}]}
+- {name: cleanup, plan: [{get: repo}]}   # want CL016

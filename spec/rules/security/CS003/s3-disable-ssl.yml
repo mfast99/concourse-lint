@@ -1,0 +1,14 @@
+# CS003: s3 resource with disable_ssl.
+resources:
+- name: bucket
+  type: s3
+  source:
+    bucket: artifacts
+    regexp: app-(.*).tgz
+    endpoint: https://minio.internal
+    disable_ssl: true         # want CS003
+
+jobs:
+- name: test
+  plan:
+  - get: bucket

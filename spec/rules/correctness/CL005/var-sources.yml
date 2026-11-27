@@ -1,0 +1,17 @@
+# CL005: duplicate var source.
+var_sources:
+- name: settings
+  type: dummy
+  config: {vars: {region: eu-central-1}}
+- name: settings              # want CL005
+  type: dummy
+  config: {vars: {region: eu-west-1}}
+
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan: [{get: repo}]

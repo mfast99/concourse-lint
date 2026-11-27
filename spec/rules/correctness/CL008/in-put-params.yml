@@ -1,0 +1,14 @@
+# CL008: local variables are checked in put params and inside strings too.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: release
+  plan:
+  - get: repo
+  - put: repo
+    params:
+      repository: repo
+      tag_prefix: "v((.:version))-"   # want CL008

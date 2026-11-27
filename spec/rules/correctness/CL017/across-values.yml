@@ -1,0 +1,18 @@
+# CL017: a number inside a list. across runs with 1.2 instead of 1.20; 1.21
+# and 1.22 keep their spelling, so there is exactly one finding.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - task: test
+    file: repo/ci/test.yml
+    across:
+    - var: go_version
+      values: [1.20, 1.21, 1.22]   # want CL017
+    params:
+      GO_VERSION: ((.:go_version))

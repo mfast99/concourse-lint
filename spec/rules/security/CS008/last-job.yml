@@ -1,0 +1,12 @@
+# CS008: public: true after the plan, on the last job of several.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan: [{get: repo}]
+- name: docs
+  plan: [{get: repo}]
+  public: true                # want CS008

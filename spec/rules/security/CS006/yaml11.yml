@@ -1,0 +1,19 @@
+# CS006: YAML 1.1 booleans (yes, on) count as true; "true" is only CL001.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+  - task: a
+    file: repo/ci/a.yml
+    privileged: yes           # want CS006
+  - task: b
+    file: repo/ci/b.yml
+    privileged: on            # want CS006
+  - task: c
+    file: repo/ci/c.yml
+    privileged: "true"        # want CL001

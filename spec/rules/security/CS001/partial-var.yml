@@ -1,0 +1,11 @@
+# CS001: a value that only CONTAINS a ((var)) still has a fixed part.
+resources:
+- name: db
+  type: mock
+  source:
+    password: prefix-((db.suffix))   # want CS001
+
+jobs:
+- name: test
+  plan:
+  - get: db

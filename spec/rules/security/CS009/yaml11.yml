@@ -1,0 +1,16 @@
+# CS009: YAML 1.1 "yes" counts as true; a quoted "true" is only CL001.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: x
+  plan:
+  - get: repo
+  - load_var: a
+    file: repo/a
+    reveal: yes               # want CS009
+  - load_var: b
+    file: repo/b
+    reveal: "true"            # want CL001

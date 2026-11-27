@@ -1,0 +1,31 @@
+# CL011: an output of a step with across is not available after it, because
+# every iteration runs in its own scope.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+  - task: compile
+    across:
+    - var: arch
+      values: [amd64, arm64]
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: golang, tag: "1.24"}
+      inputs: [{name: repo}]
+      outputs: [{name: binary}]
+      run: {path: repo/ci/compile.sh}
+  - task: package
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: alpine, tag: "3.20"}
+      inputs: [{name: binary}]  # want CL011
+      run: {path: binary/package.sh}

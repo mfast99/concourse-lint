@@ -1,0 +1,19 @@
+# CL024: a broken document after the first one gives no CL000, because
+# Concourse never reads it (fly accepts the file).
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+---  # want CL024
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Install dependencies first
+COPY package*.json ./
+RUN npm ci

@@ -1,0 +1,15 @@
+# CL001: a quoted "true" is a string, not a boolean. Concourse rejects it as
+# a wrong type, so CS007 does not fire either.
+resource_types:
+- name: dind
+  type: registry-image
+  privileged: "true"          # want CL001
+  source: {repository: example/dind-resource, tag: "2.0.0"}
+
+resources:
+- {name: thing, type: dind, source: {}}
+
+jobs:
+- name: x
+  plan:
+  - get: thing

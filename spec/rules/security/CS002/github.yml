@@ -1,0 +1,15 @@
+# CS002: GitHub personal access token. Under a secret-like key only CS002 is
+# reported, not CS001 as well.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: release
+  plan:
+  - get: repo
+  - task: release
+    file: repo/ci/release.yml
+    params:
+      GITHUB_TOKEN: ghp_0123456789abcdefghijklmnopqrstuvwxyz   # want CS002

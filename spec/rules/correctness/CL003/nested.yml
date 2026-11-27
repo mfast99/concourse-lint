@@ -1,0 +1,24 @@
+# CL003 in nested steps: in_parallel, do and try.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+- name: ci
+  type: git
+  source: {uri: https://github.com/example/ci.git}
+
+jobs:
+- name: unit
+  plan:
+  - get: repo
+    trigger: true
+  - get: ci
+- name: deploy
+  plan:
+  - in_parallel:
+    - get: repo
+      passed: [unti]          # want CL003
+  - do:
+    - try:
+        get: ci
+        passed: [unit, integration]   # want CL003

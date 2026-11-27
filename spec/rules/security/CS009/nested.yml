@@ -1,0 +1,18 @@
+# CS009 in nested steps: in_parallel and try.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: x
+  plan:
+  - get: repo
+  - in_parallel:
+    - load_var: a
+      file: repo/a
+      reveal: true            # want CS009
+  - try:
+      load_var: b
+      file: repo/b
+      reveal: true            # want CS009

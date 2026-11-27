@@ -1,0 +1,12 @@
+# CL020: a typo in version of a get. Concourse only knows "latest" and
+# "every" and silently ignores any other word, so it takes the latest version.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+    version: evry             # want CL020

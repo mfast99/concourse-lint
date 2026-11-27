@@ -1,0 +1,6 @@
+# CS008 in flow style.
+resources:
+- {name: repo, type: git, source: {uri: "https://github.com/example/app.git"}}
+
+jobs:
+- {name: build, public: true, plan: [{get: repo}]}   # want CS008

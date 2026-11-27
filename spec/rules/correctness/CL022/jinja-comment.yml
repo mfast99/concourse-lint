@@ -1,0 +1,11 @@
+{# Rendered by gen_pipeline.py #}  # want CL022
+# CL022: a Jinja comment marks a template.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo

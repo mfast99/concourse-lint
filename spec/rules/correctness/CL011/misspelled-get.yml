@@ -1,0 +1,20 @@
+# CL011: a misspelled get (CL002) fetches nothing, so the input named after
+# the intended resource is missing too. The hint points to the get instead
+# of suggesting the misspelled name.
+resources:
+- name: repo                    # want CL006
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: build
+  plan:
+  - get: rpeo                   # want CL002
+  - task: compile
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: golang, tag: "1.24"}
+      inputs: [{name: repo}]    # want CL011
+      run: {path: repo/ci/compile.sh}

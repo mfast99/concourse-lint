@@ -1,0 +1,17 @@
+# CL008: a quoted name may contain a dot, ((.:"local.var")); the whole
+# quoted text is the name, so ((.:"local.vars")) misses "local.var".
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: deploy
+  plan:
+  - get: repo
+  - load_var: local.var
+    file: repo/version
+  - task: deploy
+    file: repo/ci/deploy.yml
+    params:
+      VERSION: ((.:"local.vars"))  # want CL008

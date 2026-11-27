@@ -1,0 +1,305 @@
+name: ci
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+# A new push to a pull request cancels the run of the commit before. Every
+# other run has a group of its own and is never cancelled: one group for all
+# pushes to main would cancel the waiting runs when more than one waits.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+# (TestWorkflowsUseGitHubHostedRunners).
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          # The minor version of go.mod in its newest patch release, with its
+          # security fixes (TestGoVersionsMatch); go-version-file would
+          # install exactly the version in go.mod.
+          go-version: "1.27.x"
+          check-latest: true
+      - name: Check formatting
+        run: test -z "$(gofmt -l .)"
+      - run: go vet ./...
+      - run: go test ./...
+      # setup-go restores the Go test cache; archtest reads the imports
+      # through go list, which the cache does not see.
+      - run: go test -count=1 ./internal/archtest
+
+  # The tests on Windows and macOS: paths and separators, CRLF line endings
+  # (actions/checkout converts the files to CRLF on Windows, as Git does for
+  # most Windows users), symlinks, positions in the language server, and the
+  # binary lookup of the editor packages.
+  test-os:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [windows-2025, macos-15]
+    runs-on: ${{ matrix.runner }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          go-version: "1.27.x"
+          check-latest: true
+      - run: go test ./...
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      # pnpm in the version of packageManager in editors/vscode/package.json.
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with:
+          package_json_file: editors/vscode/package.json
+      - name: VS Code extension
+        working-directory: editors/vscode
+        run: pnpm install --frozen-lockfile && pnpm run check && pnpm test
+      - name: Sublime Text package
+        run: python -m unittest discover -s editors/sublime/tests -t editors/sublime/tests
+
+  # The hooks of .pre-commit-hooks.yaml in a Git repository, with pre-commit
+  # in a fixed version: concourse-lint (built from source with Go) and
+  # concourse-lint-system (the binary on the PATH).
+  pre-commit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          go-version: "1.27.x"
+          check-latest: true
+      - run: pipx install pre-commit==4.7.0
+      - run: scripts/test-pre-commit.sh
+      - name: Hook with the installed binary
+        run: |
+          go build -o "$RUNNER_TEMP/bin/concourse-lint" ./cmd/concourse-lint
+          PATH="$RUNNER_TEMP/bin:$PATH" scripts/test-pre-commit.sh system
+
+  # The field tables against the structs of Concourse (atc). A module of its
+  # own, so its dependencies come from its own go.mod.
+  conformance:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          go-version: "1.27.x"
+          check-latest: true
+          cache-dependency-path: conformance/concourse/go.sum
+      - run: make conformance
+
+  # staticcheck from the module in tools/.
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          go-version: "1.27.x"
+          check-latest: true
+      - run: make lint
+
+  # A short fuzz run. A failing input is written to
+  # internal/lint/testdata/fuzz/FuzzCheck/ (the file not in git) and
+  # uploaded, so that it can be committed as a regression case.
+  fuzz:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          go-version: "1.27.x"
+          check-latest: true
+      - run: make fuzz FUZZTIME=30s
+      - if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: fuzz-failure
+          path: internal/lint/testdata/fuzz/FuzzCheck/
+          if-no-files-found: ignore
+
+  # Builds the VS Code extension for every platform, with the binary inside.
+  # The packages can be downloaded from the run.
+  vscode:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # git describe needs the tags for the version in the binary.
+          fetch-depth: 0
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          go-version: "1.27.x"
+          # The newest patch release of Go with its security fixes, not an
+          # older one from the tool cache of the runner image.
+          check-latest: true
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      # pnpm in the version of packageManager in editors/vscode/package.json.
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with:
+          package_json_file: editors/vscode/package.json
+      # A dependency update (Dependabot) without a new
+      # scripts/third-party-licenses.sh run fails here. The packaging checks
+      # the same; this step only names the reason.
+      - name: Check the third-party licenses
+        run: scripts/third-party-licenses.sh --check
+      - run: scripts/package-vscode.sh
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: vscode-extension
+          path: dist/vscode/*.vsix
+          if-no-files-found: error
+
+  # Builds the npm package with the binaries of all platforms and runs it
+  # with npx in an empty project. The package can be downloaded from the run.
+  npm:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # git describe needs the tags for the version in the binary.
+          fetch-depth: 0
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          go-version: "1.27.x"
+          check-latest: true
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - run: make npm-test
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: npm-package
+          path: dist/npm/*.tgz
+          if-no-files-found: error
+
+  # The release archives of this commit with GoReleaser, nothing published
+  # (make release-snapshot), so that a broken .goreleaser.yaml shows up
+  # before a release: the release version and notes tests, the build of all
+  # six targets and the check of every archive.
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          go-version: "1.27.x"
+          check-latest: true
+          cache-dependency-path: |
+            go.sum
+            tools/release/go.sum
+      - run: make release-snapshot
+      # The archives and the Homebrew formula for the job homebrew.
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-snapshot
+          path: |
+            dist/release/*.tar.gz
+            dist/release/*.zip
+            dist/release/checksums.txt
+            dist/release/homebrew/
+          if-no-files-found: error
+
+  # Installs the Homebrew formula of the snapshot with brew on macOS and on
+  # Linux (Linuxbrew, preinstalled on the Ubuntu runner), from the archives
+  # of the job release.
+  homebrew:
+    needs: release
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, macos-15]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-snapshot
+          path: dist/release
+      - name: Put brew on the PATH (Linux)
+        if: runner.os == 'Linux'
+        run: echo "/home/linuxbrew/.linuxbrew/bin" >>"$GITHUB_PATH"
+      - run: scripts/test-homebrew-formula.sh
+
+  # The GitHub Action (action/) on Linux, macOS and Windows, with the
+  # archives of the job release instead of a GitHub release: clean
+  # pipelines pass, a broken one fails the step.
+  action:
+    needs: release
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, macos-15, windows-2025]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-snapshot
+          path: dist/release
+      - name: Version and URL of the snapshot
+        id: snapshot
+        shell: bash
+        run: |
+          archive="$(cd dist/release && ls concourse-lint_*_linux_amd64.tar.gz)"
+          version="${archive#concourse-lint_}"
+          echo "version=${version%_linux_amd64.tar.gz}" >>"$GITHUB_OUTPUT"
+          workspace="$(cygpath -m "$GITHUB_WORKSPACE" 2>/dev/null || echo "$GITHUB_WORKSPACE")"
+          [[ "$workspace" == /* ]] || workspace="/$workspace"
+          echo "url=file://$workspace/dist/release" >>"$GITHUB_OUTPUT"
+      - name: Clean pipelines pass
+        uses: ./action
+        env:
+          CONCOURSE_LINT_DOWNLOAD_URL: ${{ steps.snapshot.outputs.url }}
+        with:
+          version: ${{ steps.snapshot.outputs.version }}
+          args: check spec/valid
+      - name: A broken pipeline fails
+        id: broken
+        continue-on-error: true
+        uses: ./action
+        env:
+          CONCOURSE_LINT_DOWNLOAD_URL: ${{ steps.snapshot.outputs.url }}
+        with:
+          version: ${{ steps.snapshot.outputs.version }}
+          args: check spec/rules/correctness/CL002
+      - name: Check that the broken pipeline failed
+        shell: bash
+        env:
+          OUTCOME: ${{ steps.broken.outcome }}
+        run: '[ "$OUTCOME" = failure ] || { echo "::error::the action passed a broken pipeline"; exit 1; }'

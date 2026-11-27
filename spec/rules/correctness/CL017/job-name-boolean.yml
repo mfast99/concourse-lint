@@ -1,0 +1,11 @@
+# CL017: an unquoted yes as a job name. Concourse reads it as a boolean and
+# turns it into the text "true", so the job is called "true".
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: yes                   # want CL017
+  plan:
+  - get: repo

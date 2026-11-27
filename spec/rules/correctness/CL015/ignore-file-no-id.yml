@@ -1,0 +1,10 @@
+# concourse-lint:ignore-file   # want CL015
+# CL015: ignore-file without a rule ID suppresses nothing.
+resources:
+- name: repo
+  type: git
+  source: {uri: "http://git.internal/app.git"}  # want CS004
+
+jobs:
+- name: x
+  plan: [{get: repo}]

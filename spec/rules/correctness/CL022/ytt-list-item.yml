@@ -1,0 +1,8 @@
+# CL022: a ytt marker as a list item, which ytt replaces by a resource.
+resources:
+- #@ git_resource("repo")  # want CL022
+
+jobs:
+- name: test
+  plan:
+  - get: repo

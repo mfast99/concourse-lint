@@ -1,0 +1,12 @@
+# Findings of the parser can be suppressed like any other rule, here CL018.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+  # concourse-lint:ignore CL018 -- read by our own tooling
+  x-owner: platform-team
+
+jobs:
+- name: test
+  plan:
+  - get: repo

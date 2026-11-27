@@ -1,0 +1,49 @@
+# CL021 negatives: a tab written as the escape \t, tabs in block scalars
+# (scripts, heredocs), tabs in comments, and tabs around a value that are
+# only whitespace.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - task: test
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: busybox, tag: "1.37"}
+      run:
+        path: sh
+        args:
+        - -c
+        - |
+          printf 'a	b'
+          cat <<EOF
+          	indented with a tab
+          EOF
+    params:
+      ESCAPED: "build\tdone"
+      FOLDED: >
+        build	done
+      PLAIN: done	
+      QUOTED: "done"	
+      # a comment	with a tab
+- name: lint
+  plan:
+  - get: repo
+  - task: lint
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: busybox, tag: "1.37"}
+      run:
+        path: sh
+        args:
+        - -c
+        - | # a comment after the block indicator
+          printf 'a	b'

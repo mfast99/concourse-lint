@@ -1,0 +1,16 @@
+# concourse-lint:ignore-file CL015
+# CL015 cannot be suppressed: a broken suppression comment must not switch
+# itself off.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+  - task: image
+    # concourse-lint:ignore     # want CL015
+    privileged: true            # want CS006
+    file: repo/ci/build.yml

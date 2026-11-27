@@ -1,0 +1,36 @@
+# Completion of keys: the fields of the object at the cursor, without the
+# ones that are already there (the key at the cursor itself stays). In a
+# step, the fields of its kind and the modifiers.
+resources:
+- name: repo
+#  ^ complete-has name check_every icon webhook_token public
+#  ^ complete-not plan get
+  type: git
+#   ^ complete-not name source
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+    trigger: true
+#     ^ complete-has trigger passed version params attempts timeout on_failure tags
+#     ^ complete-not get put task file
+  - task: unit
+    config:
+      platform: linux
+#      ^ complete-has platform inputs outputs caches params rootfs_uri
+#      ^ complete-not file privileged image_resource run
+      image_resource:
+        type: registry-image
+#        ^ complete-has type name version params
+        source: {repository: example/build, tag: "1.0"}
+      run:
+        path: make
+#        ^ complete-has path args dir user
+    privileged: true          # want CS006
+#    ^ complete-has file image input_mapping privileged attempts
+#    ^ complete-not trigger task config
+  serial: true
+# ^ complete-has serial max_in_flight on_failure public
+# ^ complete-not name plan

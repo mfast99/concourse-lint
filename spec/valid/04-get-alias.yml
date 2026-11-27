@@ -1,0 +1,23 @@
+# get/put with an alias via "resource:". The artifact is named after the alias,
+# passed: refers to the real resource. Must produce no findings.
+resources:
+- name: app-repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: source
+    resource: app-repo
+    trigger: true
+  - task: test
+    file: source/ci/test.yml
+- name: release
+  plan:
+  - get: source
+    resource: app-repo
+    passed: [test]
+  - put: tag-release
+    resource: app-repo
+    params: {repository: source, tag: source/VERSION}

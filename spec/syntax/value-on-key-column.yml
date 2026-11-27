@@ -1,0 +1,17 @@
+# want-anywhere CL000
+# The value of "MODE:" is on the next line but not indented under the key.
+# goccy took it as the value anyway (goccy PR #955); fly rejects the file.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - task: test
+    file: repo/ci/test.yml
+    params:
+      MODE:
+      fast

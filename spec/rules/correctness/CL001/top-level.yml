@@ -1,0 +1,13 @@
+# want-anywhere CL001
+# CL001: the pipeline has no jobs, because of a typo ("job" instead of "jobs").
+# Follow-up findings: the unknown key "job" (CL018, Concourse ignores it) and
+# "repo" is never used (CL006).
+resources:
+- name: repo                  # want CL006
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+job:                          # want CL018
+- name: test
+  plan:
+  - get: repo

@@ -1,0 +1,4 @@
+# Switches off a rule and a parser rule.
+rules:
+  CS008: off
+  CL018: off

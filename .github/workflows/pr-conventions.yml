@@ -1,0 +1,67 @@
+# Checks the conventions from CONTRIBUTING.md: target branch, branch name,
+# PR title (becomes the squash commit message) and issue reference.
+name: pr-conventions
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+# A new push to a pull request cancels the run of the commit before. Every
+# other run has a group of its own and is never cancelled: one group for all
+# pushes to main would cancel the waiting runs when more than one waits.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check branch, title and issue reference
+        # Untrusted input is passed via env, never interpolated into the script.
+        env:
+          HEAD: ${{ github.head_ref }}
+          BASE: ${{ github.base_ref }}
+          TITLE: ${{ github.event.pull_request.title }}
+          BODY: ${{ github.event.pull_request.body }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          fail=0
+          err() { echo "::error::$1"; fail=1; }
+
+          types='feat|fix|test|docs|refactor|perf|build|ci|chore'
+
+          # Release PR: develop -> main
+          if [ "$HEAD" = develop ]; then
+            [ "$BASE" = main ] || err "develop may only be merged into main."
+            [[ "$TITLE" =~ ^chore\(release\):\ v[0-9]+\.[0-9]+\.[0-9]+ ]] \
+              || err "Release PR title must be 'chore(release): vX.Y.Z'."
+            exit $fail
+          fi
+
+          # Target branch
+          if [[ "$HEAD" == hotfix/* ]]; then
+            [ "$BASE" = main ] || err "hotfix/* branches target main."
+          else
+            [ "$BASE" = develop ] || err "Pull requests target develop, not $BASE."
+          fi
+
+          # Dependabot has its own branch names and no issue.
+          if [ "$AUTHOR" = "dependabot[bot]" ]; then
+            [[ "$TITLE" =~ ^(build|ci)\(deps\):\  ]] || err "Unexpected Dependabot title: $TITLE"
+            exit $fail
+          fi
+
+          [[ "$HEAD" =~ ^($types|hotfix)/[0-9]+-[a-z0-9]+(-[a-z0-9]+)*$ ]] \
+            || err "Branch '$HEAD' does not match <type>/<issue>-<short-description>, e.g. feat/12-parser-merge-keys."
+
+          [[ "$TITLE" =~ ^($types)(\([A-Za-z0-9-]+\))?!?:\ [^\ ].*[^.]$ ]] \
+            || err "PR title '$TITLE' is not a Conventional Commit, e.g. 'feat(CL002): report unknown resources'."
+          [ "${#TITLE}" -le 72 ] || err "PR title is longer than 72 characters."
+
+          grep -Eiq '(close[sd]?|fix(e[sd])?|resolve[sd]?|refs?) +#[0-9]+' <<<"$BODY" \
+            || err "The PR description must reference an issue, e.g. 'Closes #12'."
+
+          exit $fail

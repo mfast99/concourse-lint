@@ -1,0 +1,18 @@
+# CL002 must NOT fire here: with resource: set, the name after get:/put: is
+# only an artifact name. Task and set_pipeline names are not resources.
+resources:
+- name: app-repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: source
+    resource: app-repo
+  - task: app-repo
+    file: source/ci/test.yml
+  - set_pipeline: repo
+    file: source/ci/child.yml
+  - put: deploy
+    resource: app-repo

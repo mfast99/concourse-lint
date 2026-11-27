@@ -1,0 +1,35 @@
+# Quick fix "did you mean": a finding whose hint names a close match also
+# carries the replacement for its range. Without a close match there is no
+# replacement.
+resource_types:
+- name: slack                 # want CB001
+  type: registry-image
+  source: {repository: example/slack-resource, tag: "2.0"}
+
+resources:
+- name: repo
+  type: git
+  sorce: {uri: https://github.com/example/app.git}   # want CL018
+# ^ fix "source"
+- name: notify
+  type: slak                  # want CL004
+#        ^ fix "slack"
+  source: {url: ((slack-webhook))}
+
+jobs:
+- name: build
+  plan:
+  - get: rep                  # want CL002
+#        ^ fix "repo"
+  - get: repo
+    version: evry             # want CL020
+#             ^ fix "every"
+  - put: zzz                  # want CL002
+#        ^ fix none
+- name: deploy
+  plan:
+  - get: repo
+    passed: [biuld]           # want CL003
+#             ^ fix "build"
+  - put: notify
+    params: {text: done}

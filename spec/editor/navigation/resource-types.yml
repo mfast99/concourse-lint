@@ -1,0 +1,38 @@
+# Go to definition and find references for resource types: the type of a
+# resource, of a resource type and of an image_resource. A built-in type
+# like git has no definition, but its references are found.
+resource_types:
+- name: base-image
+#         ^ references 10:9 33:15
+  type: registry-image
+  source: {repository: example/base-image, tag: "1.0"}
+- name: slack
+  type: base-image
+#         ^ definition 5:9
+  source: {repository: example/slack-resource, tag: "2.0"}
+
+resources:
+- name: notify
+  type: slack
+#        ^ definition 9:9
+  source: {url: ((slack-webhook))}
+- name: repo
+  type: git
+#        ^ definition none
+#        ^ references 20:9
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+  - task: build
+    config:
+      platform: linux
+      image_resource:
+        type: base-image
+#               ^ definition 5:9
+        source: {repository: example/build, tag: "1.0"}
+      run: {path: make}
+  - put: notify
+    params: {text: done}

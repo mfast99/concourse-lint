@@ -1,0 +1,14 @@
+# CL001: step without a step type and step with two step types.
+# Reported at the first line of the step.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - trigger: true             # want CL001
+  - get: repo                 # want CL001
+    put: repo
+  - get: repo

@@ -1,0 +1,349 @@
+# Releases a version when it reaches main: every push to main (the merge of
+# a release pull request develop -> main, or of a hotfix) whose CHANGELOG.md
+# has a version section without a published GitHub release. A push without
+# a new version section releases nothing.
+#
+#   version         the newest version in CHANGELOG.md (scripts/release-version.sh)
+#                   and whether it still needs a release
+#   github-release  tag vX.Y.Z on the pushed commit, the archives of all six
+#                   targets (.goreleaser.yaml) with checksums.txt, the section
+#                   of the version in CHANGELOG.md as release notes, the
+#                   container image ghcr.io/mfast99/concourse-lint, the
+#                   Homebrew formula in mfast99/homebrew-tap, build
+#                   provenance attestations, then the release is published
+#   publish-npm,    the npm package and the VS Code extension (Open VSX and
+#   publish-vscode  the Visual Studio Marketplace), only after the GitHub
+#                   release and only when the repository variable
+#                   (PUBLISH_NPM, PUBLISH_VSCODE) is "true"
+#   publish-action  action/ to mfast99/concourse-lint-action, tagged and
+#                   released with the same version (not for a pre-release)
+#
+# One workflow for everything, because a tag created with the GITHUB_TOKEN
+# starts no other workflow. The checks ran in the pull request before the
+# merge (rulesets); here only the tests run once more. A version with a
+# pre-release part (1.0.0-rc.1) becomes a pre-release on GitHub and the npm
+# dist-tag "next".
+#
+# Attestations (Sigstore, no key of our own) need a public repository, so a
+# private fork skips them. Users check an archive with
+# "gh attestation verify <archive> --repo mfast99/concourse-lint".
+#
+# A failed run can be run again: the version counts as released only when its
+# GitHub release is published, the tag is reused and GoReleaser replaces its
+# draft.
+name: release
+
+on:
+  push:
+    branches: [main]
+  # Publishes a released version again to the channels that are missing it
+  # (e.g. after a token was fixed): the publish-* jobs skip what exists.
+  # Only from main.
+  workflow_dispatch:
+
+# Releases never run at the same time and are never cancelled.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    runs-on: ubuntu-24.04
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+      release: ${{ steps.version.outputs.release }}
+      # The publish-* jobs run: after a new release, or when started by hand
+      # for a released version.
+      publish: ${{ steps.version.outputs.publish }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - id: version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "$GITHUB_REF" != refs/heads/main ]; then
+            echo "::error::release.yml runs only on main, not on $GITHUB_REF"
+            exit 1
+          fi
+          tag="$(scripts/release-version.sh)"
+          release=false
+          publish=false
+          if [ -z "$tag" ]; then
+            echo "CHANGELOG.md has no version section: nothing to release"
+          elif [ "$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isDraft -q .isDraft 2>/dev/null)" = false ]; then
+            echo "$tag is already released"
+            if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
+              echo "publishing $tag again where it is missing"
+              publish=true
+            fi
+          else
+            echo "releasing $tag"
+            release=true
+            publish=true
+          fi
+          echo "tag=$tag" >>"$GITHUB_OUTPUT"
+          echo "release=$release" >>"$GITHUB_OUTPUT"
+          echo "publish=$publish" >>"$GITHUB_OUTPUT"
+
+  github-release:
+    needs: version
+    if: needs.version.outputs.release == 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      # The tag, the release and its files.
+      contents: write
+      # The container image on ghcr.io.
+      packages: write
+      # The OIDC token and the storage of the attestations.
+      id-token: write
+      attestations: write
+    env:
+      TAG: ${{ needs.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          go-version: "1.27.x"
+          check-latest: true
+          cache-dependency-path: |
+            go.sum
+            tools/release/go.sum
+      # The tests include TestLicensesListsEveryModule: the license texts in
+      # the archives must match the modules in the binary.
+      - run: go test ./...
+      - name: Release notes from CHANGELOG.md
+        run: scripts/release-notes.sh "$TAG" > "$RUNNER_TEMP/release-notes.md"
+      # Through the API, since the checkout keeps no credentials. A tag that
+      # exists from a failed run must name this commit.
+      - name: Tag the commit
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if tagged_commit="$(gh api "repos/$GITHUB_REPOSITORY/commits/$TAG" -q .sha 2>/dev/null)"; then
+            if [ "$tagged_commit" != "$GITHUB_SHA" ]; then
+              echo "::error::tag $TAG already names $tagged_commit, not $GITHUB_SHA"
+              exit 1
+            fi
+          else
+            gh api "repos/$GITHUB_REPOSITORY/git/refs" -f ref="refs/tags/$TAG" -f sha="$GITHUB_SHA" --silent
+          fi
+          git tag --force "$TAG" "$GITHUB_SHA"
+      - run: make goreleaser
+      - name: Log in to ghcr.io
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$GH_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+      # The default builder (driver "docker") cannot build the attestations
+      # of a multi-platform image; the image needs no emulation, because the
+      # Dockerfile only copies the binary for each platform.
+      - name: Create a buildx builder
+        run: docker buildx create --name release --driver docker-container --use
+      # HOMEBREW_TAP_TOKEN: a fine-grained token with contents: write on
+      # mfast99/homebrew-tap only, for the formula (skipped for a pre-release).
+      - name: Build the archives and create the draft release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: bin/goreleaser release --clean --release-notes "$RUNNER_TEMP/release-notes.md"
+      - name: Check the archives
+        run: scripts/check-release-archives.sh "$TAG"
+      - name: Check the release notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          release_body="$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json body -q .body)"
+          if [ "$release_body" != "$(cat "$RUNNER_TEMP/release-notes.md")" ]; then
+            echo "::error::the draft release of $TAG does not have the notes from CHANGELOG.md"
+            exit 1
+          fi
+      - name: Attest the archives
+        if: github.event.repository.visibility == 'public'
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-checksums: dist/release/checksums.txt
+      # The digest of the multi-platform image, from the artifacts GoReleaser
+      # pushed.
+      - name: Find the image digest
+        id: image
+        run: |
+          image="ghcr.io/mfast99/concourse-lint:${TAG#v}"
+          digest="$(jq -r --arg image "$image" '.[] | select(.type == "Docker Image" and .name == $image) | .extra.Digest' dist/release/artifacts.json)"
+          if ! [[ "$digest" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo "::error::no digest for $image in dist/release/artifacts.json"
+            exit 1
+          fi
+          echo "digest=$digest" >>"$GITHUB_OUTPUT"
+      # The attestation is pushed next to the image, so that
+      # "gh attestation verify oci://ghcr.io/mfast99/concourse-lint:<version>"
+      # finds it.
+      - name: Attest the image
+        if: github.event.repository.visibility == 'public'
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-name: ghcr.io/mfast99/concourse-lint
+          subject-digest: ${{ steps.image.outputs.digest }}
+          push-to-registry: true
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false
+
+  # No token: npm trusted publishing (OIDC). On npmjs.com the package names
+  # this repository, the workflow file release.yml and the environment npm
+  # as its trusted publisher; npm then adds a provenance statement to every
+  # version. The environment npm can only be used from main. Trusted
+  # publishing needs a GitHub-hosted runner.
+  publish-npm:
+    needs: [version, github-release]
+    # github-release is skipped when this run publishes a released version again.
+    if: ${{ !cancelled() && needs.version.outputs.publish == 'true' && (needs.github-release.result == 'success' || needs.github-release.result == 'skipped') && vars.PUBLISH_NPM == 'true' }}
+    runs-on: ubuntu-24.04
+    environment: npm
+    permissions:
+      contents: read
+      # The OIDC token for npm trusted publishing.
+      id-token: write
+    env:
+      TAG: ${{ needs.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          go-version: "1.27.x"
+          check-latest: true
+      # Node 24 brings npm 11, which trusted publishing needs (11.5.1 or newer).
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: Build and test the package
+        run: VERSION="$TAG" make npm-test
+      # A version with a pre-release part (v1.0.0-rc.1) goes to the dist-tag
+      # "next", so that npm install concourse-lint keeps the last release.
+      - name: Publish
+        run: |
+          version="${TAG#v}"
+          dist_tag=latest
+          [[ "$version" == *-* ]] && dist_tag=next
+          if [ -n "$(npm view "concourse-lint@$version" version 2>/dev/null)" ]; then
+            echo "concourse-lint@$version is already on npm"
+            exit 0
+          fi
+          npm publish "dist/npm/concourse-lint-$version.tgz" --access public --provenance --tag "$dist_tag"
+
+  # Open VSX (secret OVSX_PAT) and the Visual Studio Marketplace (trusted
+  # publishing over OIDC: the publisher mfast99 trusts release.yml in the
+  # environment vscode, no secret), both publisher mfast99. The packages of
+  # all platforms also go to the GitHub release, for an installation from a
+  # VSIX file. The environment vscode can only be
+  # used from main.
+  publish-vscode:
+    needs: [version, github-release]
+    if: ${{ !cancelled() && needs.version.outputs.publish == 'true' && (needs.github-release.result == 'success' || needs.github-release.result == 'skipped') && vars.PUBLISH_VSCODE == 'true' }}
+    runs-on: ubuntu-24.04
+    environment: vscode
+    permissions:
+      # The VSIX files on the GitHub release.
+      contents: write
+      # The OIDC token for the Visual Studio Marketplace.
+      id-token: write
+    env:
+      TAG: ${{ needs.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          go-version: "1.27.x"
+          check-latest: true
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      # pnpm in the version of packageManager in editors/vscode/package.json.
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with:
+          package_json_file: editors/vscode/package.json
+      - name: Set the extension version from the tag
+        working-directory: editors/vscode
+        run: pnpm pkg set "version=${TAG#v}"
+      - name: Build all platforms
+        run: VERSION="$TAG" scripts/package-vscode.sh
+      - name: Attach the packages to the GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "$TAG" dist/vscode/*.vsix --repo "$GITHUB_REPOSITORY" --clobber
+      # The namespace exists after the first release; creating it again
+      # fails, and a real problem shows up in the publish below.
+      - name: Publish to Open VSX
+        working-directory: editors/vscode
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        run: |
+          pnpm exec ovsx create-namespace mfast99 --pat "$OVSX_PAT" || true
+          for package in ../../dist/vscode/*.vsix; do
+            pnpm exec ovsx publish "$package" --pat "$OVSX_PAT" --skip-duplicate
+          done
+      # One call for all packages: an OIDC token can be exchanged only once.
+      - name: Publish to the Visual Studio Marketplace
+        working-directory: editors/vscode
+        run: pnpm exec vsce publish --oidc --no-dependencies --skip-duplicate --packagePath ../../dist/vscode/*.vsix
+
+  # The GitHub Action: action/ goes to mfast99/concourse-lint-action with
+  # the input "version" set to this release, tagged and released with the
+  # same version (never moved). Not for a pre-release. HOMEBREW_TAP_TOKEN
+  # also has contents: write on mfast99/concourse-lint-action.
+  publish-action:
+    needs: [version, github-release]
+    if: ${{ !cancelled() && needs.version.outputs.publish == 'true' && (needs.github-release.result == 'success' || needs.github-release.result == 'skipped') && !contains(needs.version.outputs.tag, '-') }}
+    runs-on: ubuntu-24.04
+    env:
+      TAG: ${{ needs.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: mfast99/concourse-lint-action
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: action-repository
+      - name: Check whether the action is released
+        id: action-release
+        working-directory: action-repository
+        run: |
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null; then
+            echo "mfast99/concourse-lint-action $TAG exists"
+            echo "exists=true" >>"$GITHUB_OUTPUT"
+          fi
+      - name: Write the action
+        if: steps.action-release.outputs.exists != 'true'
+        run: |
+          cp action/action.yml action/install.sh action/README.md LICENSE action-repository/
+          sed -i "s/^    default: 0\.0\.0\$/    default: ${TAG#v}/" action-repository/action.yml
+          grep -q "^    default: ${TAG#v}\$" action-repository/action.yml
+          sed -i "s/concourse-lint-action@v[0-9][0-9.]*/concourse-lint-action@$TAG/" action-repository/README.md
+      - name: Commit, tag and release
+        if: steps.action-release.outputs.exists != 'true'
+        working-directory: action-repository
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --all
+          git commit --message "feat: release $TAG" || echo "no change"
+          git tag "$TAG"
+          git push origin HEAD "$TAG"
+          gh release create "$TAG" --repo mfast99/concourse-lint-action --title "$TAG" \
+            --notes "concourse-lint $TAG: https://github.com/mfast99/concourse-lint/releases/tag/$TAG"

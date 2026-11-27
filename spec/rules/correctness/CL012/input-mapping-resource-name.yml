@@ -1,0 +1,21 @@
+# CL012: input_mapping must name the artifact (here "config"), not the
+# resource behind it ("config-repo").
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+- name: config-repo
+  type: git
+  source: {uri: https://github.com/example/config.git}
+
+jobs:
+- name: deploy
+  plan:
+  - get: repo
+  - get: config
+    resource: config-repo
+  - task: render
+    file: repo/ci/render.yml
+    input_mapping:
+      source: repo
+      settings: config-repo     # want CL012

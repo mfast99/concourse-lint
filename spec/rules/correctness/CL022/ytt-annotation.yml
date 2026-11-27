@@ -1,0 +1,12 @@
+# CL022: a ytt annotation without a space after the marker.
+resources:
+#@overlay/match by="name"  # want CL022
+- name: repo
+  type: git
+  source:
+    uri: https://github.com/example/app.git
+
+jobs:
+- name: test
+  plan:
+  - get: repo

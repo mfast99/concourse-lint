@@ -1,0 +1,38 @@
+# Completion of values: the keywords of version:, inputs: and load_var
+# format:, and the artifacts available at the step for file:, image:,
+# input_mapping and the inputs of a put (sorted).
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+- name: tools
+  type: git
+  source: {uri: https://github.com/example/tools.git}
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+    version: every
+#             ^ complete every latest
+  - get: tools
+  - load_var: answer
+    file: repo/answer.json
+#          ^ complete repo/ tools/
+    format: json
+#            ^ complete json raw trim yaml yml
+  - task: test
+    file: tools/ci/test.yml
+#          ^ complete repo/ tools/
+    input_mapping: {source: repo}
+#                            ^ complete repo tools
+    image: tools
+#           ^ complete repo tools
+  - put: repo
+    inputs: [repo]
+#             ^ complete repo tools
+    params: {repository: repo}
+  - put: tools
+    inputs: detect
+#             ^ complete all detect
+    params: {repository: tools}

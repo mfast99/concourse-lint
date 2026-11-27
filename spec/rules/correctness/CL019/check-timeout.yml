@@ -1,0 +1,12 @@
+# CL019: a check_timeout that is no Go duration. fly accepts it, but every
+# check of the resource fails.
+resources:
+- name: repo
+  type: git
+  check_timeout: 5 minutes    # want CL019
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo

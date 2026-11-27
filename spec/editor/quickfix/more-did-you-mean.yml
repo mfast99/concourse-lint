@@ -1,0 +1,32 @@
+# Quick fix "did you mean" for an unknown key in a step (CL001), a load_var
+# format (CL019), an output_mapping (CL012) and a group entry (CL010).
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: build                 # want CL016
+  plan:
+  - get: repo
+    triger: true              # want CL001
+#   ^ fix "trigger"
+  - load_var: version
+    file: repo/version
+    format: jsn               # want CL019
+#            ^ fix "json"
+  - task: build
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: example/build, tag: "1.0"}
+      outputs: [{name: binary}]
+      run: {path: make}
+    output_mapping: {binry: artifact}   # want CL012
+#                     ^ fix "binary"
+
+groups:
+- name: all
+  jobs: [biuld]               # want CL010
+#          ^ fix "build"

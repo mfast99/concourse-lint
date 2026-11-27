@@ -1,0 +1,24 @@
+# CL014: the shadowed artifact is the alias name "source", not the resource.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+- name: ci
+  type: git
+  source: {uri: https://github.com/example/ci.git}
+
+jobs:
+- name: build
+  plan:
+  - get: source
+    resource: repo
+  - get: ci
+  - task: patch
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: alpine, tag: "3.20"}
+      inputs: [{name: ci}]
+      outputs: [{name: source}]   # want CL014
+      run: {path: ci/patch.sh}

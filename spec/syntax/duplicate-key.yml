@@ -1,0 +1,9 @@
+# want-anywhere CL000
+# Duplicate key in the same mapping. YAML forbids this. Important because
+# some parsers would silently take the second value.
+jobs:
+- name: test
+  plan:
+  - get: repo
+  plan:
+  - get: other

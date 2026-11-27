@@ -1,0 +1,20 @@
+# CL011: an inline task needs an input that was never fetched.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+  - task: compile
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: golang, tag: "1.24"}
+      inputs:
+      - name: repo
+      - name: cache             # want CL011
+      run: {path: repo/ci/compile.sh}

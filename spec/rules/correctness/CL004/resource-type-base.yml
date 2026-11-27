@@ -1,0 +1,15 @@
+# CL004: the base type of a resource_type must exist as well.
+resource_types:
+- name: helm
+  type: helm-base             # want CL004
+  source: {repository: example/helm-resource, tag: "1.0.0"}
+
+resources:
+- name: chart
+  type: helm
+  source: {}
+
+jobs:
+- name: deploy
+  plan:
+  - get: chart

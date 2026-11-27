@@ -1,0 +1,84 @@
+# Keeps the dependencies up to date. Pull requests go to the default branch
+# (main now, develop after go-live), so no target-branch is set.
+#
+# The titles must match pr-conventions.yml: "build(deps): ..." for Go and
+# npm, "ci(deps): ..." for GitHub Actions.
+#
+# cooldown: a new release is only proposed after 3 days. A compromised
+# release is usually pulled within that time.
+version: 2
+
+updates:
+  - package-ecosystem: gomod
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 3
+    commit-message:
+      prefix: build(deps)
+    groups:
+      go:
+        update-types: [minor, patch]
+
+  # staticcheck and govulncheck, in a module of their own.
+  - package-ecosystem: gomod
+    directory: /tools
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 3
+    commit-message:
+      prefix: build(deps)
+    groups:
+      tools:
+        patterns: ["*"]
+
+  # GoReleaser, in a module of its own (it needs the newest Go).
+  - package-ecosystem: gomod
+    directory: /tools/release
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 3
+    commit-message:
+      prefix: build(deps)
+    groups:
+      release-tools:
+        patterns: ["*"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 3
+    commit-message:
+      prefix: ci(deps)
+    groups:
+      actions:
+        update-types: [minor, patch]
+
+  # The VS Code extension (pnpm).
+  - package-ecosystem: npm
+    directory: /editors/vscode
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 3
+    commit-message:
+      prefix: build(deps)
+      prefix-development: build(deps)
+    groups:
+      npm:
+        update-types: [minor, patch]
+
+  # The base image of the container image (docker/Dockerfile).
+  - package-ecosystem: docker
+    directory: /docker
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 3
+    commit-message:
+      prefix: build(deps)

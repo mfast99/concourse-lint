@@ -1,0 +1,22 @@
+# CS009 must NOT fire here: reveal: false or no, no reveal field, and a task
+# param named "reveal".
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: x
+  plan:
+  - get: repo
+  - load_var: a
+    file: repo/a
+    reveal: false
+  - load_var: b
+    file: repo/b
+    reveal: no
+  - load_var: c
+    file: repo/c
+  - task: t
+    file: repo/ci/t.yml
+    params: {reveal: true}

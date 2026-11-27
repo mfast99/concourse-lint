@@ -1,0 +1,17 @@
+# CL010: a glob that ends in an unclosed or empty {} alternative crashes
+# fly (a bug in the glob library Concourse uses), so the pipeline cannot be
+# set. It crashes only for job names it would otherwise match in length.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+groups:
+- name: all
+  jobs: ["*"]
+- name: broken
+  jobs: ["build{"]            # want CL010
+
+jobs:
+- name: build
+  plan: [{get: repo}]

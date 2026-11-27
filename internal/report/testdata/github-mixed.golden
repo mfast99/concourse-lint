@@ -1,0 +1,4 @@
+::warning file=ci/pipeline.yml,line=9,col=3,endLine=9,endColumn=3,title=concourse-lint CS008::job 'build' has public build logs
+::error file=ci/pipeline.yml,line=13,col=10,endLine=13,endColumn=13,title=concourse-lint CL002::resource 'rep' is not defined (did you mean 'repo'?)
+::notice title=concourse-lint CS009::<stdin>:13:5: load_var 'version' reveals the value in the log
+::error file=missing.yml,title=concourse-lint::open missing.yml: no such file or directory

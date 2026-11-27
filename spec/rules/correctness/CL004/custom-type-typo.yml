@@ -1,0 +1,19 @@
+# CL004: a resource refers to a custom type with a typo (_ instead of -).
+resource_types:
+- name: slack-notification
+  type: registry-image
+  source: {repository: cfcommunity/slack-notification-resource, tag: "1.7.0"}
+
+resources:
+- name: notify
+  type: slack-notification
+  source: {url: ((slack-webhook))}
+- name: alert
+  type: slack_notification    # want CL004
+  source: {url: ((slack-webhook))}
+
+jobs:
+- name: test
+  plan:
+  - put: notify
+  - put: alert

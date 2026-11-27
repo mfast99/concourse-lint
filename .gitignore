@@ -1,0 +1,17 @@
+# Build output
+/bin/
+/dist/
+
+# Go test artifacts
+*.test
+*.out
+coverage.*
+# Note: testdata/fuzz/ is NOT ignored. Failing fuzz inputs are committed
+# as regression cases.
+
+# Editors and OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+CLAUDE.md

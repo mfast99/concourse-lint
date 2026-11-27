@@ -1,0 +1,12 @@
+# CL001: a task step with neither file: nor config:.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - task: unit                # want CL001
+    params: {VERBOSE: "1"}

@@ -1,0 +1,40 @@
+# CL005 must NOT fire here: equal names in different categories, names that
+# differ only in case, and similar names.
+resource_types:
+- name: deploy
+  type: registry-image
+  source: {repository: example/deploy-resource, tag: "1.0.0"}
+
+resources:
+- name: deploy
+  type: deploy
+  source: {}
+- name: Deploy
+  type: git
+  source: {uri: https://github.com/example/a.git}
+- name: deploy-v2
+  type: git
+  source: {uri: https://github.com/example/b.git}
+
+groups:
+- name: deploy
+  jobs: [deploy, Deploy, steps]
+
+jobs:
+- name: deploy
+  plan: [{get: deploy}, {get: deploy-v2}]
+- name: Deploy
+  plan: [{get: Deploy}]
+- name: steps
+  plan:
+  - get: deploy-v2
+  - task: build
+    file: deploy-v2/ci/build.yml
+  - task: build
+    file: deploy-v2/ci/build.yml
+  - put: deploy-v2
+  - put: deploy-v2
+  - set_pipeline: child
+    file: deploy-v2/ci/child.yml
+  - set_pipeline: child
+    file: deploy-v2/ci/child.yml

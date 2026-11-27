@@ -1,0 +1,12 @@
+# CL022: an ERB template with a control line (cloudfoundry-incubator/kubo-ci).
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+<% %w(staging production).each do |env| %>  # want CL022
+- name: deploy-<%= env %>
+  plan:
+  - get: repo
+<% end %>

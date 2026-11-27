@@ -1,0 +1,18 @@
+# CL016: "Deploy" in the group does not cover the job "deploy". The group
+# entry itself is CL010.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+groups:
+- name: ops
+  jobs: [Deploy]              # want CL010
+- name: ci
+  jobs: [test]
+
+jobs:
+- name: test
+  plan: [{get: repo}]
+- name: deploy                # want CL016
+  plan: [{get: repo}]

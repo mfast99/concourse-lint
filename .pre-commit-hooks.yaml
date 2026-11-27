@@ -1,0 +1,33 @@
+# Hooks for pre-commit (https://pre-commit.com):
+#
+#   repos:
+#     - repo: https://github.com/mfast99/concourse-lint
+#       rev: v0.2.0
+#       hooks:
+#         - id: concourse-lint
+#
+# Both hooks check the whole folder (default ".", or args: [check, ci/]) and
+# not the changed files one by one: only in a folder does concourse-lint
+# tell pipelines from other YAML (task files, templates, Kubernetes), and
+# .concourse-lint.yml and its exclude apply. They run when a YAML file
+# changed. Tested by scripts/test-pre-commit.sh.
+
+# Builds concourse-lint from the source of rev with Go (once per rev).
+- id: concourse-lint
+  name: concourse-lint
+  description: Check Concourse pipelines for errors, security issues and bad practice.
+  entry: concourse-lint
+  args: [check, .]
+  language: golang
+  pass_filenames: false
+  files: \.ya?ml$
+
+# Uses the concourse-lint on the PATH (Homebrew, npm, release archive).
+- id: concourse-lint-system
+  name: concourse-lint (installed)
+  description: Check Concourse pipelines with the concourse-lint on the PATH.
+  entry: concourse-lint
+  args: [check, .]
+  language: system
+  pass_filenames: false
+  files: \.ya?ml$

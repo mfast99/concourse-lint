@@ -1,0 +1,38 @@
+# CL014 must NOT fire here: modifying an input in place (input and output
+# with the same name), fresh output names, an output named after a resource
+# that was fetched under an alias, and the same output name in another job.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+- name: version
+  type: semver
+  source: {driver: git, uri: "https://github.com/example/app.git", branch: version, file: version}
+
+jobs:
+- name: build
+  plan:
+  - get: source
+    resource: repo
+  - get: version
+  - task: bump-in-place
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: alpine, tag: "3.20"}
+      inputs: [{name: source}, {name: version}]
+      outputs: [{name: version}, {name: dist}, {name: repo}]
+      run: {path: source/ci/bump.sh}
+- name: docs
+  plan:
+  - get: repo
+  - task: docs
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: alpine, tag: "3.20"}
+      inputs: [{name: repo}]
+      outputs: [{name: dist}]
+      run: {path: repo/ci/docs.sh}

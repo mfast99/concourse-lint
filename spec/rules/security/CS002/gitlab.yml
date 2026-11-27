@@ -1,0 +1,14 @@
+# CS002: GitLab personal access token inside a longer string.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: mirror
+  plan:
+  - get: repo
+  - task: mirror
+    file: repo/ci/mirror.yml
+    params:
+      REMOTE: "https://oauth2:glpat-abcdefghij0123456789@gitlab.example.com/app.git"   # want CS002

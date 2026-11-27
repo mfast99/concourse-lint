@@ -1,0 +1,17 @@
+# want-anywhere CL000
+# An alias whose anchor does not exist (typo: "git-src" instead of
+# "git-source"). fly: "unknown anchor 'git-src' referenced".
+resources:
+- name: repo
+  type: git
+  source: &git-source
+    uri: https://github.com/example/app.git
+- name: docs
+  type: git
+  source: *git-src
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - get: docs

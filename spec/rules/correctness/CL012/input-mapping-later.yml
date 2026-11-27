@@ -1,0 +1,16 @@
+# CL012: input_mapping points to an artifact that is only created later.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+  - task: package
+    file: repo/ci/package.yml
+    input_mapping: {binary: compiled}   # want CL012
+  - task: compile
+    file: repo/ci/compile.yml
+    output_mapping: {binary: compiled}

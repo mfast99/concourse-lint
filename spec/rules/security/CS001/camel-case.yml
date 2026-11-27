@@ -1,0 +1,13 @@
+# CS001: words are also split at case changes (dbPassword, apiKey, AuthToken).
+resources:
+- name: api
+  type: mock
+  source:
+    dbPassword: changeme      # want CS001
+    apiKey: abc123            # want CS001
+    AuthToken: plain-value    # want CS001
+
+jobs:
+- name: test
+  plan:
+  - get: api

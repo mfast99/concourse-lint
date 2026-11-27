@@ -1,0 +1,12 @@
+# CL023 must NOT fire here: a pipeline without resources whose jobs run only
+# tasks is a whole pipeline, not a fragment.
+jobs:
+- name: hello
+  plan:
+  - task: say-hello
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: busybox, tag: "1.37"}
+      run: {path: echo, args: ["get: put: not steps"]}

@@ -1,0 +1,15 @@
+# want-anywhere CL000
+# Unquoted colon followed by a space in a value. Correct would be: "Build: broken"
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  on_failure:
+    put: repo
+    params:
+      message: Build: broken

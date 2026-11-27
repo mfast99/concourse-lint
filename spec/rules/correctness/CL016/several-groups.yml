@@ -1,0 +1,25 @@
+# CL016: with several groups, a job must be in at least one of them.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+groups:
+- name: ci
+  jobs: [unit, integration]
+- name: ops
+  jobs: [deploy]
+- name: docs
+  jobs: [docs]
+
+jobs:
+- name: unit
+  plan: [{get: repo}]
+- name: integration
+  plan: [{get: repo}]
+- name: deploy
+  plan: [{get: repo}]
+- name: docs
+  plan: [{get: repo}]
+- name: nightly-cleanup       # want CL016
+  plan: [{get: repo}]

@@ -1,0 +1,17 @@
+# CB003 negatives: plans with steps, also when they come from an anchor or
+# only contain a block step.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan: &steps
+  - get: repo
+- name: again
+  plan: *steps
+- name: grouped
+  plan:
+  - do:
+    - get: repo

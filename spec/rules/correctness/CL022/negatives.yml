@@ -1,0 +1,49 @@
+# CL022 negatives: comments with an @ that are no ytt marker, #@ inside
+# values, Concourse variables (never with spaces inside), and spruce-like
+# text that is not a whole value or no spruce operator, ERB and Jinja
+# markers in comments and block scalars (scripts).
+# @todo: split the job
+#  @ owner: platform-team
+# contact: ci@example.com
+# render with spruce: (( grab meta.repo ))
+# render with erb or jinja: <%= x %> {% if x %} {# note #}
+resources:
+- name: repo
+  type: git
+  source:
+    uri: https://github.com/example/app.git#@main
+    branch: ((branch))
+    username: ((vault:git.user))
+    password: ((git-password))
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - load_var: version
+    file: repo/version
+  - task: test
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: busybox, tag: "1.37"}
+      run:
+        path: sh
+        args:
+        - -c
+        - |
+          #@ not a marker inside a script
+          echo "(( grab meta.repo ))"
+          echo "<%= erb in a script %>" '{% jinja in a script %}'
+          <% erb control line in a script %>
+          {% raw %}{# jinja in a script #}{% endraw %}
+    params:
+      VERSION: ((.:version))
+      MARKER: "#@ in a quoted string"
+      HASH_AT: value#@suffix
+      GRAB: ((grab))
+      ENCODED: ((base64))
+      EMBEDDED: prefix (( grab meta.repo )) suffix
+      UNKNOWN_OPERATOR: (( grabber meta.repo ))
+      PARENTHESES: (( 1 + 2 ))

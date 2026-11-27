@@ -1,0 +1,15 @@
+# CB001: a type that overrides a built-in (here "s3") is unused when no
+# resource of that type exists.
+resource_types:
+- name: s3                    # want CB001
+  type: registry-image
+  source: {repository: concourse/s3-resource, tag: "1.3.0"}
+
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan: [{get: repo}]

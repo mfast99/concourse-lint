@@ -1,0 +1,21 @@
+# CL008: an across variable only exists inside the step that defines it.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: deploy
+  plan:
+  - get: repo
+  - task: per-region
+    file: repo/ci/deploy.yml
+    across:
+    - var: region
+      values: [eu-central-1, eu-west-1]
+    params:
+      REGION: ((.:region))
+  - task: summary
+    file: repo/ci/summary.yml
+    params:
+      REGION: ((.:region))    # want CL008

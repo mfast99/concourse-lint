@@ -1,0 +1,13 @@
+# CS006: a task from file: with privileged: true.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+  - task: build-image
+    file: repo/ci/build-image.yml
+    privileged: true          # want CS006

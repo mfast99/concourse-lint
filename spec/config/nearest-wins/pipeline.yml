@@ -1,0 +1,11 @@
+# The config next to this file switches CS008 off.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  public: true
+  plan:
+  - get: repo

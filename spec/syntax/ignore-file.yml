@@ -1,0 +1,6 @@
+# concourse-lint:ignore-file CL000
+# CL000 cannot be suppressed: the comments of broken YAML are not reliable.
+# want-anywhere CL000
+jobs:
+- name: test
+  plan: [{get: repo}

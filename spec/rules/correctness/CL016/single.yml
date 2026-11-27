@@ -1,0 +1,15 @@
+# CL016: one job is missing from the only group.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+groups:
+- name: ci
+  jobs: [test]
+
+jobs:
+- name: test
+  plan: [{get: repo}]
+- name: deploy                # want CL016
+  plan: [{get: repo}]

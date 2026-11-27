@@ -1,0 +1,22 @@
+# CS007: every privileged type is reported, not only the first.
+resource_types:
+- name: dind
+  type: registry-image
+  privileged: true            # want CS007
+  source: {repository: example/dind-resource, tag: "2.0.0"}
+- name: safe
+  type: registry-image
+  source: {repository: example/safe-resource, tag: "1.0.0"}
+- name: buildkit
+  type: registry-image
+  privileged: yes             # want CS007
+  source: {repository: example/buildkit-resource, tag: "0.3.0"}
+
+resources:
+- {name: thing, type: dind, source: {}}
+- {name: other, type: safe, source: {}}
+- {name: image, type: buildkit, source: {}}
+
+jobs:
+- name: x
+  plan: [{get: thing}, {get: other}, {get: image}]

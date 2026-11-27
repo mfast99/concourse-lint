@@ -1,0 +1,14 @@
+# CL019: an unknown load_var format. fly accepts it, but the step fails with
+# "invalid format" every time it runs.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - load_var: settings
+    file: repo/settings.yml
+    format: yml-file          # want CL019

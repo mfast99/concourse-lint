@@ -1,0 +1,13 @@
+# Completion at the top level: the keys of a pipeline that are not there
+# yet.
+resources:
+#  ^ complete-has resources resource_types groups var_sources display
+#  ^ complete-not jobs name
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: build
+  plan:
+  - get: repo

@@ -1,0 +1,82 @@
+# CL007 must NOT fire here: alias artifact names, earlier task outputs,
+# artifacts from a finished in_parallel or do block, ((vars)) in the path, and
+# the artifact of a put (its implicit get stores it under the put name).
+resources:
+- name: app-repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+- name: ci
+  type: git
+  source: {uri: https://github.com/example/ci.git}
+
+jobs:
+- name: test
+  plan:
+  - in_parallel:
+    - get: source
+      resource: app-repo
+    - get: ci
+  - task: unit
+    file: ci/tasks/unit.yml
+  - do:
+    - task: generate
+      config:
+        platform: linux
+        image_resource:
+          type: registry-image
+          source: {repository: alpine, tag: "3.20"}
+        inputs: [{name: source}]
+        outputs: [{name: generated}]
+        run: {path: source/ci/generate.sh}
+  - task: from-output
+    file: generated/task.yml
+  - task: with-var
+    file: ci/tasks/((task-name)).yml
+  - load_var: version
+    file: source/version
+  - set_pipeline: child
+    file: generated/child.yml
+
+- name: after-put
+  plan:
+  - get: ci
+  - put: app-repo
+    params: {repository: ci}
+  - task: from-put
+    file: app-repo/ci/check.yml
+
+# in_parallel with limit: 1 runs its steps one after another, in list order.
+- name: sequential-parallel
+  plan:
+  - in_parallel:
+      limit: 1
+      steps:
+      - get: ci
+      - task: after-sibling
+        file: ci/tasks/unit.yml
+
+# Outputs of a task from file: are unknown, so later names are not checked.
+- name: open-after-file-task
+  plan:
+  - get: ci
+  - task: build
+    file: ci/tasks/build.yml
+  - task: from-unknown-output
+    file: built/task.yml
+
+# Artifacts from on_success, and from on_failure inside try, are available.
+- name: hook-outputs
+  plan:
+  - get: ci
+    on_success:
+      get: app-repo
+  - task: after-on-success
+    file: app-repo/ci/check.yml
+  - try:
+      task: may-fail
+      file: ci/tasks/unit.yml
+      on_failure:
+        get: source
+        resource: app-repo
+  - task: after-try
+    file: source/ci/check.yml

@@ -1,0 +1,14 @@
+# CS002: Stripe live secret key.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: deploy
+  plan:
+  - get: repo
+  - task: deploy
+    file: repo/ci/deploy.yml
+    params:
+      PAYMENT_CONFIG: sk_live_abcdefghijklmnopqrstuvwx   # want CS002

@@ -1,0 +1,23 @@
+# CL003 must NOT fire here: passed: with several existing jobs,
+# with an alias and with job names containing special characters.
+resources:
+- name: app-repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: unit-tests
+  plan: [{get: app-repo, trigger: true}]
+- name: "lint.go"
+  plan: [{get: app-repo, trigger: true}]
+- name: integration_v2
+  plan:
+  - get: source
+    resource: app-repo
+    passed: [unit-tests, "lint.go"]
+- name: release
+  plan:
+  - get: app-repo
+    passed:
+    - integration_v2
+    - unit-tests

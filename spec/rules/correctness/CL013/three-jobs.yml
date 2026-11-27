@@ -1,0 +1,25 @@
+# CL013: a cycle of three jobs (a -> b -> c -> a). Every passed: entry that is
+# part of the cycle is reported. Job d hangs off the cycle but is not part of it.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: a
+  plan:
+  - get: repo
+    passed: [c]               # want CL013
+- name: b
+  plan:
+  - get: repo
+    passed: [a]               # want CL013
+- name: c
+  plan:
+  - get: repo
+    passed:
+    - b                       # want CL013
+- name: d
+  plan:
+  - get: repo
+    passed: [a, b]

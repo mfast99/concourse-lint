@@ -1,0 +1,19 @@
+# CL008: local variables do not carry over from one job to another.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+  - load_var: version
+    file: repo/version
+- name: deploy
+  plan:
+  - get: repo
+  - task: deploy
+    file: repo/ci/deploy.yml
+    params:
+      VERSION: ((.:version))  # want CL008

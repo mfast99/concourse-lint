@@ -1,0 +1,21 @@
+# CL003: passed: names a job that does not exist. Inline and block list.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: unit
+  plan:
+  - get: repo
+    trigger: true
+- name: integration
+  plan:
+  - get: repo
+    passed: [unit, unti]      # want CL003
+- name: deploy
+  plan:
+  - get: repo
+    passed:
+    - unit
+    - integraton              # want CL003

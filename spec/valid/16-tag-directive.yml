@@ -1,0 +1,18 @@
+# Edge case: a %TAG directive that remaps !!, and a tagged value without
+# content. Valid YAML. goccy panicked on the empty !!str (goccy PR #988).
+# Cross-check with fly validate-pipeline.
+%TAG !! tag:yaml.org,2002:
+---
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - task: test
+    file: repo/ci/test.yml
+    params:
+      EMPTY: !!str

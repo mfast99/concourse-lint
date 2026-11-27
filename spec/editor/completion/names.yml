@@ -1,0 +1,41 @@
+# Completion of names, sorted: resources after get:, put: and resource:,
+# jobs in passed: (without the job itself) and in groups, resource types
+# after type: (the pipeline's own and the built-in ones).
+resource_types:
+- name: slack
+  type: registry-image
+  source: {repository: example/slack-resource, tag: "2.0"}
+
+resources:
+- name: repo
+  type: git
+#        ^ complete-has git registry-image slack
+  source: {uri: https://github.com/example/app.git}
+- name: notify
+  type: slack
+  source: {url: ((slack-webhook))}
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+#        ^ complete notify repo
+  - put: notify
+#          ^ complete notify repo
+    params: {text: done}
+- name: deploy
+  plan:
+  - get: source
+    resource: repo
+#             ^ complete notify repo
+    passed: [build]
+#             ^ complete build
+  - task: deploy
+    file: source/ci/deploy.yml
+
+groups:
+- name: all
+  jobs: [build, deploy]
+#                ^ complete build deploy
+  resources: [repo, notify]
+#              ^ complete notify repo

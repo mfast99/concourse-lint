@@ -1,0 +1,15 @@
+# CL005: two load_var steps with the same name in one job. fly rejects them
+# ("repeated var name").
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: release
+  plan:
+  - get: repo
+  - load_var: version
+    file: repo/version
+  - load_var: version         # want CL005
+    file: repo/next-version

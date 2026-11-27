@@ -1,0 +1,21 @@
+# CL013 must NOT fire here: diamond and long chain without a cycle.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: start
+  plan: [{get: repo, trigger: true}]
+- name: left
+  plan: [{get: repo, passed: [start], trigger: true}]
+- name: right
+  plan: [{get: repo, passed: [start], trigger: true}]
+- name: join
+  plan: [{get: repo, passed: [left, right], trigger: true}]
+- name: step-1
+  plan: [{get: repo, passed: [join]}]
+- name: step-2
+  plan: [{get: repo, passed: [step-1]}]
+- name: step-3
+  plan: [{get: repo, passed: [step-2, join, start]}]

@@ -1,0 +1,19 @@
+# CS006: privileged is a step field, also for inline tasks.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+  - task: build-image
+    privileged: true          # want CS006
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: concourse/oci-build-task, tag: "0.11.1"}
+      inputs: [{name: repo}]
+      run: {path: build}

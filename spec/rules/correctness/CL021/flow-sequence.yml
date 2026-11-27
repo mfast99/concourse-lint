@@ -1,0 +1,20 @@
+# CL021: a literal tab inside a double-quoted string in a flow list. Before
+# the goccy fix this was a false CL000 that hid every other finding.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - task: test
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: busybox, tag: "1.37"}
+      run:
+        path: sh
+        args: ["-c", "printf 'a	b'"]   # want CL021

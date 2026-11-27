@@ -1,0 +1,3 @@
+# Normalize line endings. Spec cases must stay LF: positions are compared per
+# line, and TestCRLF converts to CRLF itself.
+* text=auto eol=lf

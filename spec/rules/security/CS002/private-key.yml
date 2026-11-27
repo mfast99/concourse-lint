@@ -1,0 +1,15 @@
+# CS002: PEM private key in a block scalar, reported at the line of the key.
+resources:
+- name: repo
+  type: git
+  source:
+    uri: git@github.com:example/app.git
+    private_key: |            # want CS002
+      -----BEGIN RSA PRIVATE KEY-----
+      MIIEfakefakefakefakefakefakefake
+      -----END RSA PRIVATE KEY-----
+
+jobs:
+- name: test
+  plan:
+  - get: repo

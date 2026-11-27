@@ -1,0 +1,14 @@
+# CL015: ignore without a rule ID suppresses nothing.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+  - task: image
+    # concourse-lint:ignore     # want CL015
+    privileged: true            # want CS006
+    file: repo/ci/build.yml

@@ -1,0 +1,10 @@
+# CB002: 59s is still below one minute.
+resources:
+- name: repo
+  type: git
+  check_every: 59s            # want CB002
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan: [{get: repo}]

@@ -1,0 +1,14 @@
+# Smallest meaningful pipeline. Must produce no findings.
+resources:
+- name: repo
+  type: git
+  source:
+    uri: https://github.com/example/app.git
+
+jobs:
+- name: unit
+  plan:
+  - get: repo
+    trigger: true
+  - task: test
+    file: repo/ci/test.yml

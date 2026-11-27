@@ -1,0 +1,4 @@
+# Makes CS005 stricter and CB003 milder.
+rules:
+  CS005: error
+  CB003: {severity: info}

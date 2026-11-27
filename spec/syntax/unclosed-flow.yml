@@ -1,0 +1,9 @@
+# want-anywhere CL000
+# Unclosed flow list.
+jobs:
+- name: test
+  plan:
+  - get: repo
+    passed: [unit, build
+  - task: x
+    file: repo/x.yml

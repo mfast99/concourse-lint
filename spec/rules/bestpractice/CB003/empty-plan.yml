@@ -1,0 +1,12 @@
+# CB003: an empty plan, e.g. a placeholder that was never filled in.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+- name: deploy                # want CB003
+  plan: []

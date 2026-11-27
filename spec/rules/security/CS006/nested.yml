@@ -1,0 +1,19 @@
+# CS006 in nested steps: in_parallel, do and try.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+  - in_parallel:
+    - task: a
+      file: repo/ci/a.yml
+      privileged: true        # want CS006
+  - do:
+    - try:
+        task: b
+        file: repo/ci/b.yml
+        privileged: true      # want CS006

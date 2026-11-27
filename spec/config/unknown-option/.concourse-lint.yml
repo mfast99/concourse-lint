@@ -1,0 +1,3 @@
+# want-config-error
+rules:
+  CS006: {allowed_hosts: [git.internal]}

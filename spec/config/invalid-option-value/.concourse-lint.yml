@@ -1,0 +1,3 @@
+# want-config-error
+rules:
+  CB002: {min_interval: soon}

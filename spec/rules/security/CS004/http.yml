@@ -1,0 +1,11 @@
+# CS004: git resource over plain http://.
+resources:
+- name: repo
+  type: git
+  source:
+    uri: http://git.internal/app.git   # want CS004
+
+jobs:
+- name: test
+  plan:
+  - get: repo

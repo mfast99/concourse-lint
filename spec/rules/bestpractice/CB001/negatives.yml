@@ -1,0 +1,38 @@
+# CB001 must NOT fire here: types used by a resource, by another used type,
+# as the image_resource of a task, and an override of a built-in type that
+# its resources use.
+resource_types:
+- name: used
+  type: registry-image
+  source: {repository: example/used, tag: "1.0.0"}
+- name: base
+  type: registry-image
+  source: {repository: example/base, tag: "1.0.0"}
+- name: derived
+  type: base
+  source: {repository: example/derived, tag: "1.0.0"}
+- name: git
+  type: registry-image
+  source: {repository: concourse/git-resource, tag: "1.17.0"}
+- name: task-image
+  type: registry-image
+  source: {repository: example/task-image-resource, tag: "1.0.0"}
+
+resources:
+- {name: a, type: used, source: {}}
+- {name: b, type: derived, source: {}}
+- {name: repo, type: git, source: {uri: "https://github.com/example/app.git"}}
+
+jobs:
+- name: x
+  plan:
+  - get: a
+  - get: b
+  - get: repo
+  - task: custom-image
+    config:
+      platform: linux
+      image_resource:
+        type: task-image
+        source: {repository: example/tools, tag: "1.0.0"}
+      run: {path: echo}

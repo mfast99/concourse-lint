@@ -1,0 +1,38 @@
+# CS003 must NOT fire here: explicit false, empty list, similar
+# field names and task params (those are the task's business).
+resources:
+- name: repo
+  type: git
+  source:
+    uri: https://github.com/example/app.git
+    skip_ssl_verification: false
+- name: image
+  type: registry-image
+  source: {repository: example/app, insecure: false}
+- name: legacy
+  type: docker-image
+  source:
+    repository: example/legacy
+    insecure_registries: []
+- name: bucket
+  type: s3
+  source: {bucket: b, regexp: "x-(.*)", disable_ssl: no}
+- name: flag
+  type: mock
+  source:
+    mirror_self: true
+    skip_download: true
+    ssl_verification: true
+
+jobs:
+- name: build
+  plan:
+  - get: repo
+  - get: image
+  - get: legacy
+  - get: bucket
+  - get: flag
+  - task: check
+    file: repo/ci/check.yml
+    params:
+      INSECURE: true

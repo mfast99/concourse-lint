@@ -1,0 +1,15 @@
+# CS004: also for values nested deeper inside source (maps and lists).
+resources:
+- name: artifacts
+  type: mock
+  source:
+    mirrors:
+    - https://mirror-a.example.com
+    - http://mirror-b.example.com   # want CS004
+    proxy:
+      url: http://proxy.internal:3128   # want CS004
+
+jobs:
+- name: test
+  plan:
+  - get: artifacts

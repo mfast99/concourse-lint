@@ -1,0 +1,19 @@
+# CL003 in an anchor used by two jobs: exactly one finding, at the definition.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: unit
+  plan:
+  - get: repo
+    trigger: true
+- name: staging
+  plan:
+  - &after-unit
+    get: repo
+    passed: [unti]            # want CL003
+- name: production
+  plan:
+  - *after-unit

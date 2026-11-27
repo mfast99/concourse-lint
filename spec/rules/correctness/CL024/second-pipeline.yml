@@ -1,0 +1,21 @@
+# CL024: a second pipeline after the first one; Concourse reads only the
+# first document, so the second is ignored.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+---  # want CL024
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: deploy
+  plan:
+  - get: repo

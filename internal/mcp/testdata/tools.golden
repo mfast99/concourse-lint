@@ -1,0 +1,274 @@
+{
+  "tools": [
+    {
+      "annotations": {
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "description": "Check a Concourse CI pipeline for errors, security issues and bad practice, offline. Pass either text, the pipeline YAML (optionally with filename, which also decides which .concourse-lint.yml applies), or paths, files or folders inside the working directory (folders are searched for pipelines; the nearest .concourse-lint.yml applies). Returns the same JSON as `concourse-lint check --format json`: findings with file, rule, severity (error, warning, info), pos (line and col from 1, end_line and end_col right after the range), message, hint, suggestion (the exact replacement text for the range, or empty) and docs (link to the rule page), plus errors for inputs that could not be read.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "filename": {
+            "description": "Only with text: the file name used in the findings, relative to the working directory; the config file is searched from its folder.",
+            "type": "string"
+          },
+          "paths": {
+            "description": "Pipeline files or folders to check, absolute or relative to the working directory, inside it.",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "text": {
+            "description": "The pipeline YAML to check.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "name": "check_pipeline",
+      "outputSchema": {
+        "properties": {
+          "errors": {
+            "items": {
+              "properties": {
+                "file": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "file",
+                "message"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "findings": {
+            "items": {
+              "properties": {
+                "docs": {
+                  "type": "string"
+                },
+                "file": {
+                  "type": "string"
+                },
+                "hint": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "pos": {
+                  "properties": {
+                    "col": {
+                      "type": "integer"
+                    },
+                    "end_col": {
+                      "type": "integer"
+                    },
+                    "end_line": {
+                      "type": "integer"
+                    },
+                    "line": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "line",
+                    "col",
+                    "end_line",
+                    "end_col"
+                  ],
+                  "type": "object"
+                },
+                "rule": {
+                  "type": "string"
+                },
+                "severity": {
+                  "enum": [
+                    "error",
+                    "warning",
+                    "info"
+                  ],
+                  "type": "string"
+                },
+                "suggestion": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "file",
+                "rule",
+                "severity",
+                "pos",
+                "message",
+                "hint",
+                "suggestion",
+                "docs"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "findings",
+          "errors"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "annotations": {
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "description": "List every concourse-lint rule with its ID, severity in this project (error, warning, info, or off when the config file switches it off), default severity, title and documentation link.",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {},
+        "type": "object"
+      },
+      "name": "list_rules",
+      "outputSchema": {
+        "properties": {
+          "rules": {
+            "items": {
+              "properties": {
+                "default_severity": {
+                  "enum": [
+                    "error",
+                    "warning",
+                    "info"
+                  ],
+                  "type": "string"
+                },
+                "docs": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "severity": {
+                  "description": "The severity under the config file of the working directory.",
+                  "enum": [
+                    "error",
+                    "warning",
+                    "info",
+                    "off"
+                  ],
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "severity",
+                "default_severity",
+                "title",
+                "docs"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "rules"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "annotations": {
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "description": "Explain a concourse-lint rule: its title, severity in this project, default severity, what it checks, an example, how to fix a finding and how to suppress it (Markdown from the rule's documentation).",
+      "inputSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "description": "The rule ID, e.g. CL002 (case-insensitive).",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "name": "explain_rule",
+      "outputSchema": {
+        "properties": {
+          "checked": {
+            "description": "What the rule checks, as Markdown.",
+            "type": "string"
+          },
+          "default_severity": {
+            "enum": [
+              "error",
+              "warning",
+              "info"
+            ],
+            "type": "string"
+          },
+          "docs": {
+            "type": "string"
+          },
+          "example": {
+            "description": "A pipeline that gets a finding, as Markdown.",
+            "type": "string"
+          },
+          "fix": {
+            "description": "How to fix a finding, as Markdown.",
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "severity": {
+            "description": "The severity under the config file of the working directory.",
+            "enum": [
+              "error",
+              "warning",
+              "info",
+              "off"
+            ],
+            "type": "string"
+          },
+          "suppress": {
+            "description": "How to suppress a finding, as Markdown.",
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "severity",
+          "default_severity",
+          "title",
+          "checked",
+          "example",
+          "fix",
+          "suppress",
+          "docs"
+        ],
+        "type": "object"
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+# CL007: with resource: set, the artifact is named after get:, not after the
+# resource. "repo/..." does not exist here, "source/..." would.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: source
+    resource: repo
+  - task: unit
+    file: repo/ci/unit.yml    # want CL007

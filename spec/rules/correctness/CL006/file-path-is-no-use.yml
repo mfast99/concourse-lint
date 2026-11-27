@@ -1,0 +1,16 @@
+# CL006: a resource name in a file: path does not count as use. The path
+# itself is then CL007, because the artifact was never fetched.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+- name: ci                    # want CL006
+  type: git
+  source: {uri: https://github.com/example/ci.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - task: unit
+    file: ci/tasks/unit.yml   # want CL007

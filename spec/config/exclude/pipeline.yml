@@ -1,0 +1,10 @@
+# Not excluded: checked as usual.
+resources:
+- name: repo                  # want CL006
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: rpo                  # want CL002

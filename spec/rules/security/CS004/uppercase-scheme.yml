@@ -1,0 +1,17 @@
+# CS004: the scheme is case-insensitive (HTTP://, Http://).
+resources:
+- name: bucket
+  type: s3
+  source:
+    bucket: artifacts
+    regexp: app-(.*).tgz
+    endpoint: HTTP://minio.internal:9000   # want CS004
+- name: repo
+  type: git
+  source: {uri: "Http://git.internal/app.git"}   # want CS004
+
+jobs:
+- name: test
+  plan:
+  - get: bucket
+  - get: repo

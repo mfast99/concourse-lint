@@ -1,0 +1,12 @@
+# CS003: git resource with skip_ssl_verification.
+resources:
+- name: repo
+  type: git
+  source:
+    uri: https://git.internal/app.git
+    skip_ssl_verification: true   # want CS003
+
+jobs:
+- name: test
+  plan:
+  - get: repo

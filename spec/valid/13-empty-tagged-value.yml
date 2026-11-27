@@ -1,0 +1,17 @@
+# Edge case: a tagged value without content (!!str). Valid YAML, the value
+# is "". goccy took the next key as the value (CL000, goccy PR #999).
+# Cross-check with fly validate-pipeline.
+resources:
+- name: repo
+  type: git
+  source: {uri: https://github.com/example/app.git}
+
+jobs:
+- name: test
+  plan:
+  - get: repo
+  - task: test
+    file: repo/ci/test.yml
+    params:
+      EMPTY: !!str
+      MODE: fast

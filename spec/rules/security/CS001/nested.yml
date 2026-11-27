@@ -1,0 +1,16 @@
+# CS001: secret-like keys nested deeper inside source (maps and lists).
+resources:
+- name: api
+  type: mock
+  source:
+    auth:
+      basic:
+        password: changeme    # want CS001
+    clients:
+    - id: web
+      api_key: abc123         # want CS001
+
+jobs:
+- name: test
+  plan:
+  - get: api

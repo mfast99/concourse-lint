@@ -1,0 +1,18 @@
+# CB001: every unused type is reported, at the line of its name.
+resource_types:
+- name: slack                 # want CB001
+  type: registry-image
+  source: {repository: cfcommunity/slack-notification-resource, tag: "1.7.0"}
+- name: used
+  type: registry-image
+  source: {repository: example/used, tag: "1.0.0"}
+- name: helm                  # want CB001
+  type: registry-image
+  source: {repository: example/helm-resource, tag: "1.0.0"}
+
+resources:
+- {name: thing, type: used, source: {}}
+
+jobs:
+- name: test
+  plan: [{get: thing}]

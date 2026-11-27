@@ -1,0 +1,45 @@
+{
+  "contributions": {
+    "settings": [
+      {
+        "file_patterns": ["/LSP-concourse-lint.sublime-settings"],
+        "schema": {
+          "$id": "sublime://settings/LSP-concourse-lint",
+          "definitions": {
+            "PluginConfig": {
+              "properties": {
+                "settings": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "allOf": [
+            {"$ref": "sublime://settings/LSP-plugin-base"},
+            {"$ref": "sublime://settings/LSP-concourse-lint#/definitions/PluginConfig"}
+          ]
+        }
+      },
+      {
+        "file_patterns": ["/*.sublime-project"],
+        "schema": {
+          "properties": {
+            "settings": {
+              "properties": {
+                "LSP": {
+                  "properties": {
+                    "LSP-concourse-lint": {
+                      "$ref": "sublime://settings/LSP-concourse-lint#/definitions/PluginConfig"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}
